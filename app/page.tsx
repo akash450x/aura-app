@@ -439,7 +439,7 @@ export default function AuraApp() {
         </div>
       )}
 
-      <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm glass-nav rounded-full px-1.5 py-1.5 flex justify-between items-center z-50">
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-[320px] glass-nav rounded-full px-2 py-1 flex justify-between items-center z-50"
         {[
           { id: "studio", icon: Wand2, label: t.studio },
           { id: "wardrobe", icon: Shirt, label: t.wardrobe },
