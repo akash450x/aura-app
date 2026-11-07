@@ -23,6 +23,11 @@
   --shadow-panel: 0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
+html {
+  /* THIS FORCES THE APP TO BE SMALLER */
+  font-size: 14px; 
+}
+
 body {
   background-color: var(--bg-main);
   color: var(--text-main);
