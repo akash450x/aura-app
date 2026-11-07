@@ -13,7 +13,7 @@ const dict = {
     hybridwardrobe: "Outfit mixed with your wardrobe and AI suggestions to complete the look.",
     profile: "Profile & Settings", name: "Your Name", gender: "Gender", lang: "Language", theme: "Appearance",
     save: "Save Settings", additem: "Add Clothing", search: "Search closet...",
-    season: "Season", weather: "Weather", generate_avatar: "Generate Avatar", upload_face: "Upload Face Photo"
+    season: "Season", weather: "Weather", generate_avatar: "Generate Avatar", upload_face: "Upload Face Photo", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
   },
   hi: {
     studio: "स्टूडियो", wardrobe: "वार्डरोब", avatar: "अवतार", discover: "खोजें",
@@ -24,14 +24,14 @@ const dict = {
     hybridwardrobe: "लुक को पूरा करने के लिए आपके वार्डरोब और एआई सुझावों का मिश्रण।",
     profile: "प्रोफ़ाइल और सेटिंग्स", name: "आपका नाम", gender: "लिंग", lang: "भाषा", theme: "दिखावट",
     save: "सेटिंग्स सहेजें", additem: "कपड़े जोड़ें", search: "अलमारी खोजें...",
-    season: "मौसम", weather: "वेदर", generate_avatar: "अवतार बनाएं", upload_face: "चेहरा अपलोड करें"
+    season: "मौसम", weather: "वेदर", generate_avatar: "अवतार बनाएं", upload_face: "चेहरा अपलोड करें", manual_select: "आइटम प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
   }
 };
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
 // YOUR PROVIDED IMAGES + A DEFAULT AVATAR BODY
-const BASE_AVATAR = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop";
+const BASE_AVATAR = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop";  
 const DISCOVER_IMAGES = [
   { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal Aesthetic", styleTag: "Minimal" },
   { id: "d2", url: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop", title: "Streetwear", styleTag: "Streetwear" },
