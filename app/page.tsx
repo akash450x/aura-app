@@ -198,7 +198,7 @@ export default function AuraApp() {
         </header>
 
         {activeTab === "studio" && (
-          <div className="flex flex-col gap-5 fade-in duration-300">
+          <div className="flex flex-col gap-5">
             <section className="mt-1 flex flex-col gap-2">
               <h2 className="font-serif text-4xl leading-[1.05] tracking-tight">{t.welcome}, {userName.split(' ')[0]}.</h2>
               <p className="text-[var(--text-muted)] text-xs max-w-sm leading-relaxed">{t.desc}</p>
@@ -239,7 +239,7 @@ export default function AuraApp() {
             </section>
 
             {outfit && (
-              <section className="glass-panel p-5 rounded-3xl fade-in duration-300">
+              <section className="glass-panel p-5 rounded-3xl">
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles size={14} className="text-[var(--text-muted)]" />
                   <h3 className="font-medium text-sm">{outfit.title}</h3>
@@ -259,7 +259,7 @@ export default function AuraApp() {
         )}
 
         {activeTab === "wardrobe" && (
-          <div className="flex flex-col gap-5 fade-in duration-300">
+          <div className="flex flex-col gap-5">
             <div className="flex justify-between items-center">
               <h2 className="font-serif text-3xl tracking-tight">{t.wardrobe}</h2>
               <button onClick={() => fileInputRef.current?.click()} className="w-9 h-9 rounded-full bg-[var(--text-main)] text-[var(--bg-main)] flex items-center justify-center shadow-md active:scale-95 transition-transform"><Plus size={18} /></button>
@@ -289,7 +289,7 @@ export default function AuraApp() {
         )}
 
         {activeTab === "avatar" && (
-          <div className="flex flex-col gap-5 fade-in duration-300 min-h-[50vh]">
+          <div className="flex flex-col gap-5 min-h-[50vh]">
             <h2 className="font-serif text-3xl tracking-tight">Your Character</h2>
             
             {!faceImage ? (
@@ -305,7 +305,7 @@ export default function AuraApp() {
                 <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[var(--bg-main)] flex justify-center items-end shadow-lg">
                   <img src={BASE_AVATAR} className="absolute inset-0 w-full h-full object-cover" />
                   {!avatarGenerated ? (
-                    <div className="relative z-10 flex flex-col items-center mb-8 zoom-in-95 duration-300">
+                    <div className="relative z-10 flex flex-col items-center mb-8">
                       <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[var(--text-main)] shadow-xl mb-4">
                         <img src={faceImage} className="w-full h-full object-cover" />
                       </div>
@@ -314,7 +314,7 @@ export default function AuraApp() {
                       </button>
                     </div>
                   ) : (
-                    <div className="relative z-10 flex flex-col items-center mb-5 zoom-in-95 duration-500">
+                    <div className="relative z-10 flex flex-col items-center mb-5">
                        <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#ff2a2a] shadow-[0_0_20px_rgba(255,42,42,0.4)] mb-1 relative top-[45px]">
                         <img src={faceImage} className="w-full h-full object-cover" />
                       </div>
@@ -331,7 +331,7 @@ export default function AuraApp() {
         )}
 
         {activeTab === "discover" && (
-          <div className="flex flex-col gap-5 fade-in duration-300">
+          <div className="flex flex-col gap-5">
             <h2 className="font-serif text-3xl tracking-tight mb-1">{t.discover}</h2>
             <div className="columns-2 gap-3 space-y-3">
               {DISCOVER_IMAGES.map((img) => (
@@ -357,8 +357,8 @@ export default function AuraApp() {
       </div>
 
       {showUploadModal && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm fade-in duration-200">
-          <div className="w-full max-w-md glass-nav rounded-t-[32px] sm:rounded-[32px] p-5 slide-in-from-bottom-8 sm:zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md glass-nav rounded-t-[32px] sm:rounded-[32px] p-5">
             <div className="flex justify-between items-center mb-3">
               <h2 className="font-serif text-lg">Add to Wardrobe</h2>
               <button onClick={() => setShowUploadModal(false)} className="w-7 h-7 rounded-full glass-panel flex items-center justify-center"><X size={16} /></button>
@@ -380,8 +380,8 @@ export default function AuraApp() {
       )}
 
       {showSettings && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm fade-in duration-200">
-          <div className="w-full max-w-md glass-nav rounded-t-[32px] sm:rounded-[32px] p-6 slide-in-from-bottom-8 sm:zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md glass-nav rounded-t-[32px] sm:rounded-[32px] p-6">
             <div className="flex justify-between items-center mb-5">
               <h2 className="font-serif text-xl">{t.profile}</h2>
               <button onClick={() => setShowSettings(false)} className="w-8 h-8 rounded-full glass-panel flex items-center justify-center"><X size={18} /></button>
@@ -447,7 +447,7 @@ export default function AuraApp() {
           { id: "discover", icon: Compass, label: t.discover }
         ].map((tab) => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative flex flex-col items-center justify-center gap-0.5 w-full py-2 rounded-full transition-all duration-300 ${activeTab === tab.id ? "text-[var(--text-main)] scale-105" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"}`}>
-            {activeTab === tab.id && <div className="absolute inset-0 bg-white/70 dark:bg-white/15 rounded-full shadow-sm -z-10 zoom-in-95 duration-200" />}
+            {activeTab === tab.id && <div className="absolute inset-0 bg-white/70 dark:bg-white/15 rounded-full shadow-sm -z-10" />}
             <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
             <span className="text-[9px] font-bold tracking-wide">{tab.label}</span>
           </button>
