@@ -7,33 +7,32 @@ const dict = {
   en: {
     studio: "Studio", wardrobe: "Wardrobe", avatar: "Avatar", discover: "Discover",
     welcome: "Welcome", letstyle: "Let's style.", desc: "Discover your personal style with intelligent outfit recommendations.",
-    placeholder: "What are we dressing for today?", create: "Create outfit", ai: "AI Stylist",
-    emptywardrobe: "Your wardrobe is empty, so I generated an AI outfit for you.",
-    fullwardrobe: "Outfit generated from your wardrobe.",
-    hybridwardrobe: "Outfit mixed with your wardrobe and AI suggestions to complete the look.",
-    profile: "Profile & Settings", name: "Your Name", gender: "Gender", lang: "Language", theme: "Appearance",
-    save: "Save Settings", additem: "Add Clothing", search: "Search closet...",
-    season: "Season", weather: "Weather", generate_avatar: "Generate Avatar", upload_face: "Upload Face Photo", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
+    placeholder: "What are we dressing for?", create: "Create", ai: "AI Stylist",
+    emptywardrobe: "Wardrobe empty. AI generated this look.",
+    fullwardrobe: "Generated from your wardrobe.",
+    hybridwardrobe: "Mixed your wardrobe with AI suggestions.",
+    profile: "Settings", name: "Your Name", gender: "Gender", lang: "Language", theme: "Appearance",
+    save: "Save", search: "Search...",
+    season: "Season", weather: "Weather", upload_face: "Upload Face", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
   },
   hi: {
     studio: "स्टूडियो", wardrobe: "वार्डरोब", avatar: "अवतार", discover: "खोजें",
-    welcome: "स्वागत है", letstyle: "चलिए स्टाइल करें।", desc: "इंटेलिजेंट आउटफिट सुझावों के साथ अपनी व्यक्तिगत शैली खोजें।",
-    placeholder: "आज हम क्या पहन रहे हैं?", create: "आउटफिट बनाएं", ai: "एआई स्टाइलिस्ट",
-    emptywardrobe: "आपका वार्डरोब खाली है, इसलिए मैंने एक एआई आउटफिट बनाया है।",
-    fullwardrobe: "आपके वार्डरोब से आउटफिट बनाया गया।",
-    hybridwardrobe: "लुक को पूरा करने के लिए आपके वार्डरोब और एआई सुझावों का मिश्रण।",
-    profile: "प्रोफ़ाइल और सेटिंग्स", name: "आपका नाम", gender: "लिंग", lang: "भाषा", theme: "दिखावट",
-    save: "सेटिंग्स सहेजें", additem: "कपड़े जोड़ें", search: "अलमारी खोजें...",
-    season: "मौसम", weather: "वेदर", generate_avatar: "अवतार बनाएं", upload_face: "चेहरा अपलोड करें", manual_select: "आइटम प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
+    welcome: "स्वागत है", letstyle: "चलिए स्टाइल करें।", desc: "इंटेलिजेंट आउटफिट सुझावों के साथ अपनी शैली खोजें।",
+    placeholder: "आज क्या पहनें?", create: "बनाएं", ai: "एआई स्टाइलिस्ट",
+    emptywardrobe: "वार्डरोब खाली है। एआई ने यह बनाया है।",
+    fullwardrobe: "आपके वार्डरोब से बनाया गया।",
+    hybridwardrobe: "आपके कपड़ों और एआई का मिश्रण।",
+    profile: "सेटिंग्स", name: "आपका नाम", gender: "लिंग", lang: "भाषा", theme: "थीम",
+    save: "सहेजें", search: "खोजें...",
+    season: "मौसम", weather: "वेदर", upload_face: "चेहरा अपलोड करें", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
   }
 };
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
-// YOUR PROVIDED IMAGES + A DEFAULT AVATAR BODY
-const BASE_AVATAR = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop";  
+const BASE_AVATAR = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop";
 const DISCOVER_IMAGES = [
-  { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal Aesthetic", styleTag: "Minimal" },
+  { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal", styleTag: "Minimal" },
   { id: "d2", url: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop", title: "Streetwear", styleTag: "Streetwear" },
   { id: "d3", url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop", title: "Night Out", styleTag: "Party" },
 ];
@@ -63,7 +62,6 @@ export default function AuraApp() {
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [avatarGenerated, setAvatarGenerated] = useState(false);
 
-  // DISCOVER PREFERENCES
   const [likedItems, setLikedItems] = useState<string[]>([]);
   const [dislikedItems, setDislikedItems] = useState<string[]>([]);
 
@@ -79,7 +77,6 @@ export default function AuraApp() {
       if (savedAvatar) setAvatar(savedAvatar);
       const savedFace = localStorage.getItem("aura_face");
       if (savedFace) { setFaceImage(savedFace); setAvatarGenerated(true); }
-      
       const savedLikes = localStorage.getItem("aura_likes");
       if (savedLikes) setLikedItems(JSON.parse(savedLikes));
       const savedDislikes = localStorage.getItem("aura_dislikes");
@@ -96,7 +93,6 @@ export default function AuraApp() {
       localStorage.setItem("aura_dislikes", JSON.stringify(dislikedItems));
       if (avatar) localStorage.setItem("aura_avatar", avatar);
       if (faceImage) localStorage.setItem("aura_face", faceImage);
-      
       if (isDark) document.documentElement.classList.add("dark-mode");
       else document.documentElement.classList.remove("dark-mode");
     }
@@ -111,7 +107,6 @@ export default function AuraApp() {
     const isCold = selectedSeason === "Winter" || selectedWeather === "Cold";
     const isHot = selectedSeason === "Summer" || selectedWeather === "Hot";
 
-    // AI LEARNS FROM DISCOVER LIKES
     const likedStyles = DISCOVER_IMAGES.filter(img => likedItems.includes(img.id)).map(img => img.styleTag);
     const aiPrefers = likedStyles.length > 0 ? likedStyles.join(", ") : "all styles";
 
@@ -121,363 +116,5 @@ export default function AuraApp() {
     const extras = wardrobe.filter(i => ["cap", "chain", "ring", "watch", "accessory"].some(k => i.type.toLowerCase().includes(k)));
 
     if (wardrobe.length === 0) {
-      reason = `Your wardrobe is empty. I generated this look based on your liked styles (${aiPrefers}) and the weather.`;
-      if (likedStyles.includes("Streetwear")) items = ["Oversized Heavyweight Tee", "Baggy Cargo Pants", "Chunky Sneakers", "Beanie"];
-      else if (likedStyles.includes("Party")) items = ["Black Silk Shirt", "Tailored Trousers", "Leather Loafers", "Silver Chain"];
-      else if (isCold) items = ["Warm Trench Coat", "Knit Sweater", "Thermal Trousers", "Leather Boots"];
-      else if (isHot) items = ["Linen T-Shirt", "Cotton Shorts", "Sliders", "Sunglasses"];
-      else items = ["Basic White Tee", "Straight Leg Jeans", "Clean White Sneakers", "Minimal Watch"];
-    } else {
-      if (tops.length > 0) items.push(shuffle([...tops])[0].name);
-      if (bottoms.length > 0) items.push(shuffle([...bottoms])[0].name);
-      if (shoes.length > 0) items.push(shuffle([...shoes])[0].name);
-      if (extras.length > 0) items.push(shuffle([...extras])[0].name);
-
-      if (items.length < 3) {
-        reason = t.hybridwardrobe;
-        if (!tops.length) items.push(isCold ? "Warm Knit Sweater" : "Basic Graphic Tee");
-        if (!bottoms.length) items.push(isHot ? "Linen Shorts" : "Relaxed Denim Jeans");
-        if (!shoes.length) items.push(isHot ? "Sliders" : "Chunky Sneakers");
-        if (!extras.length) items.push("Minimalist Accessory");
-      } else {
-        reason = `Outfit generated from your wardrobe. AI also factored in your liked styles (${aiPrefers}).`;
-      }
-    }
-
-    setOutfit({ title: `${selectedSeason !== "Any" ? selectedSeason : ""} ${selectedWeather !== "Any" ? selectedWeather : ""} Look`, items: shuffle(items), reason });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => { setPendingImage(event.target?.result as string); setSelectedType("auto"); setShowUploadModal(true); };
-    reader.readAsDataURL(file);
-    e.target.value = ''; 
-  };
-
-  const confirmUpload = () => {
-    if (!pendingImage) return;
-    let finalType = selectedType;
-    let finalName = "";
-    if (selectedType === "auto") {
-      const types = ["Shirt", "Jeans", "Shoes", "Cap", "Accessory"];
-      finalType = types[wardrobe.length % types.length];
-      finalName = `AI Scanned ${finalType}`;
-    } else { finalType = selectedType; finalName = `${selectedType} (Manual)`; }
-    setWardrobe(prev => [...prev, { id: Date.now().toString(), name: finalName, type: finalType, img: pendingImage }]);
-    setShowUploadModal(false); setPendingImage(null);
-  };
-
-  const handleFaceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => { setFaceImage(event.target?.result as string); setAvatarGenerated(false); };
-    reader.readAsDataURL(file);
-  };
-
-  const handleLike = (id: string) => {
-    setLikedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-    setDislikedItems(prev => prev.filter(i => i !== id)); // Remove from dislike if liked
-  };
-
-  const handleDislike = (id: string) => {
-    setDislikedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-    setLikedItems(prev => prev.filter(i => i !== id)); // Remove from like if disliked
-  };
-
-  const occasionTags = ["Casual", "Streetwear", "Formal", "Aesthetic", "Funky", "Date Night"];
-
-  return (
-    <div className="min-h-screen relative overflow-hidden pb-32 font-sans"
-            <div className="fixed inset-0 -z-10 bg-[var(--bg-main)] transition-colors duration-500 overflow-hidden">
-        <img 
-          src="https://images.unsplash.com/photo-1550614000-4b95d858288d?q=80&w=2000&auto=format&fit=crop" 
-          className="absolute inset-0 w-full h-full object-cover opacity-60 dark:opacity-30 blur-sm scale-105" 
-          alt="background"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--bg-main)] opacity-80" />
-      </div>
-
-      <div className="px-6 pt-10 flex flex-col gap-8 max-w-md mx-auto relative z-10">
-        <header className="flex justify-between items-center">
-          <h1 className="font-agency text-[#ff2a2a] text-4xl mt-1 tracking-widest drop-shadow-md">AURA</h1>
-          <button onClick={() => setShowSettings(true)} className="w-12 h-12 rounded-full glass-panel flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-sm overflow-hidden">
-            {avatar ? <img src={avatar} className="w-full h-full object-cover" /> : <User size={20} />}
-          </button>
-        </header>
-
-        {/* STUDIO TAB */}
-        {activeTab === "studio" && (
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <section className="mt-2 flex flex-col gap-4">
-              <h2 className="font-serif text-5xl leading-[1.05] tracking-tight">{t.welcome}, {userName.split(' ')[0]}.</h2>
-              <p className="text-[var(--text-muted)] text-base max-w-sm leading-relaxed">{t.desc}</p>
-            </section>
-
-            <section className="flex flex-col gap-4">
-              <div className="glass-panel rounded-[32px] p-3 flex flex-col gap-3 transition-all focus-within:ring-2 ring-black/10 dark:ring-white/10">
-                <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full bg-transparent border-none outline-none resize-none px-3 pt-3 pb-1 text-base placeholder:text-[var(--text-muted)]" rows={2} />
-                
-                <div className="px-3 pb-2 flex flex-wrap gap-2">
-                  <select value={selectedSeason} onChange={(e) => setSelectedSeason(e.target.value)} className="glass-panel px-3 py-1.5 rounded-lg text-xs font-medium outline-none">
-                    <option value="Any">Any Season</option>
-                    <option value="Summer">Summer</option>
-                    <option value="Winter">Winter</option>
-                    <option value="Monsoon">Monsoon</option>
-                    <option value="Spring">Spring</option>
-                  </select>
-                  <select value={selectedWeather} onChange={(e) => setSelectedWeather(e.target.value)} className="glass-panel px-3 py-1.5 rounded-lg text-xs font-medium outline-none">
-                    <option value="Any">Any Weather</option>
-                    <option value="Hot">Hot</option>
-                    <option value="Cold">Cold</option>
-                    <option value="Rainy">Rainy</option>
-                    <option value="Humid">Humid</option>
-                  </select>
-                </div>
-
-                <div className="flex justify-between items-center px-1 pb-1">
-                  <span className="text-xs font-medium text-[var(--text-muted)] flex items-center gap-1.5"><Sparkles size={14} /> {t.ai}</span>
-                  <button onClick={handleGenerate} className="bg-[var(--text-main)] text-[var(--bg-main)] rounded-full px-5 py-2.5 text-sm font-medium flex items-center gap-1 hover:opacity-80 active:scale-95 transition-all shadow-md">
-                    {t.create} <ChevronRight size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex overflow-x-auto gap-2 pb-2 -mx-6 px-6 scrollbar-hide">
-                {occasionTags.map(tag => (
-                  <button key={tag} onClick={() => setPrompt(tag)} className="whitespace-nowrap glass-panel px-4 py-2 rounded-full text-xs font-medium hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all text-[var(--text-main)]">
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {outfit && (
-              <section className="glass-panel p-6 rounded-3xl animate-in fade-in slide-in-from-bottom-6 duration-500">
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles size={16} className="text-[var(--text-muted)]" />
-                  <h3 className="font-medium text-lg">{outfit.title}</h3>
-                </div>
-                <div className="space-y-3 mb-4">
-                  {outfit.items.map((item: string, i: number) => (
-                    <div key={i} className="flex items-center gap-3 bg-black/5 dark:bg-white/5 p-3 rounded-2xl">
-                      <div className="w-10 h-10 rounded-xl bg-[var(--bg-main)] flex items-center justify-center"><Shirt size={16} /></div>
-                      <span className="text-sm font-medium">{item}</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-[var(--text-muted)] leading-relaxed italic">"{outfit.reason}"</p>
-              </section>
-            )}
-          </div>
-        )}
-
-        {/* WARDROBE TAB */}
-        {activeTab === "wardrobe" && (
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center">
-              <h2 className="font-serif text-4xl tracking-tight">{t.wardrobe}</h2>
-              <button onClick={() => fileInputRef.current?.click()} className="w-10 h-10 rounded-full bg-[var(--text-main)] text-[var(--bg-main)] flex items-center justify-center shadow-lg active:scale-95 transition-transform"><Plus size={20} /></button>
-              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-            </div>
-            
-            <div className="glass-panel flex items-center px-4 py-3 rounded-2xl gap-3">
-              <Search size={18} className="text-[var(--text-muted)]" />
-              <input type="text" placeholder={t.search} className="bg-transparent border-none outline-none w-full text-sm" />
-            </div>
-
-            {wardrobe.length === 0 ? (
-              <p className="text-[var(--text-muted)] text-sm text-center mt-10">{t.emptywardrobe}</p>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                {wardrobe.map((item) => (
-                  <div key={item.id} className="glass-panel rounded-3xl overflow-hidden aspect-[3/4] relative flex flex-col">
-                    <img src={item.img} className="w-full h-full object-cover" />
-                    <div className="absolute bottom-0 left-0 w-full bg-black/60 backdrop-blur-md p-2 text-white">
-                      <p className="text-xs font-bold truncate">{item.name}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* AVATAR TAB - NO MORE DUMMY ICONS */}
-        {activeTab === "avatar" && (
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-[50vh]">
-            <h2 className="font-serif text-4xl tracking-tight">Your AURA Character</h2>
-            
-            {!faceImage ? (
-              <div className="flex flex-col items-center justify-center mt-10 glass-panel p-8 rounded-3xl">
-                <div className="w-24 h-24 rounded-full glass-panel flex items-center justify-center mb-4"><User size={40} strokeWidth={1} className="text-[var(--text-muted)]" /></div>
-                <h3 className="font-serif text-xl text-center mb-2">Meet your digital self.</h3>
-                <p className="text-[var(--text-muted)] text-center text-sm mb-6">Upload a clear face photo to personalise your AI avatar.</p>
-                <button onClick={() => faceInputRef.current?.click()} className="bg-[var(--text-main)] text-[var(--bg-main)] rounded-full px-8 py-3 text-sm font-medium active:scale-95 transition-transform shadow-md">{t.upload_face}</button>
-                <input type="file" accept="image/*" ref={faceInputRef} onChange={handleFaceUpload} className="hidden" />
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4">
-                <div className="w-full glass-panel rounded-3xl overflow-hidden relative aspect-[3/4] bg-[var(--bg-main)] flex justify-center items-end pb-0 shadow-2xl">
-                  
-                  {/* REAL BASE AVATAR IMAGE */}
-                  <img src={BASE_AVATAR} className="absolute inset-0 w-full h-full object-cover" />
-
-                  {/* The Face mapping Overlay */}
-                  {!avatarGenerated ? (
-                    <div className="relative z-10 flex flex-col items-center mb-10 animate-in zoom-in-95">
-                      <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[var(--text-main)] shadow-xl mb-6">
-                        <img src={faceImage} className="w-full h-full object-cover" />
-                      </div>
-                      <button onClick={() => setAvatarGenerated(true)} className="bg-[var(--text-main)] text-[var(--bg-main)] rounded-full px-6 py-2.5 text-sm font-medium shadow-lg flex items-center gap-2 hover:opacity-90 transition">
-                        <Sparkles size={16} /> Generate Character
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="relative z-10 flex flex-col items-center mb-6 animate-in zoom-in-95 duration-500">
-                       {/* The face is now applied onto the body area */}
-                       <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#ff2a2a] shadow-[0_0_30px_rgba(255,42,42,0.4)] mb-2 relative top-[60px]">
-                        <img src={faceImage} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                         <p className="text-white text-xs font-bold uppercase tracking-widest">AURA Avatar Generated</p>
-                      </div>
-                      <button onClick={() => setFaceImage(null)} className="mt-3 text-xs font-medium text-white bg-black/50 px-4 py-1.5 rounded-full backdrop-blur-md">Reset Face</button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* DISCOVER TAB - WITH LIKES/DISLIKES */}
-        {activeTab === "discover" && (
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className="font-serif text-4xl tracking-tight mb-2">{t.discover}</h2>
-            
-            <div className="columns-2 gap-4 space-y-4">
-              {DISCOVER_IMAGES.map((img) => (
-                <div key={img.id} className={`relative rounded-3xl overflow-hidden break-inside-avoid h-64 group transition-all duration-300 ${dislikedItems.includes(img.id) ? 'opacity-40 grayscale' : ''}`}>
-                  <img src={img.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
-                  
-                  <div className="absolute bottom-0 left-0 w-full p-4 flex justify-between items-end">
-                    <p className="text-white text-sm font-medium">{img.title}</p>
-                    <div className="flex gap-2">
-                      <button onClick={() => handleDislike(img.id)} className={`w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center transition ${dislikedItems.includes(img.id) ? 'bg-[#ff2a2a] text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}>
-                        <X size={14} />
-                      </button>
-                      <button onClick={() => handleLike(img.id)} className={`w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center transition ${likedItems.includes(img.id) ? 'bg-[#ff2a2a] text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}>
-                        <Heart size={14} className={likedItems.includes(img.id) ? "fill-white" : ""} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* WARDROBE UPLOAD MODAL */}
-      {showUploadModal && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md glass-nav rounded-t-[40px] sm:rounded-[40px] p-6 animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-serif text-xl">Add to Wardrobe</h2>
-              <button onClick={() => setShowUploadModal(false)} className="w-8 h-8 rounded-full glass-panel flex items-center justify-center"><X size={18} /></button>
-            </div>
-            {pendingImage && <div className="w-full h-48 rounded-2xl overflow-hidden mb-4 border border-black/10 dark:border-white/10"><img src={pendingImage} className="w-full h-full object-cover" /></div>}
-            <label className="text-xs font-medium text-[var(--text-muted)] uppercase mb-2 block">{t.manual_select}</label>
-            <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full glass-panel px-4 py-3 rounded-xl outline-none focus:ring-2 ring-black/10 dark:ring-white/10 text-sm font-medium mb-6 appearance-none">
-              <option value="auto" className="text-black">✨ {t.auto_detect}</option>
-              <option value="Shirt" className="text-black">Shirt</option>
-              <option value="T-Shirt" className="text-black">T-Shirt</option>
-              <option value="Jeans" className="text-black">Jeans</option>
-              <option value="Chinos" className="text-black">Chinos</option>
-              <option value="Shoes" className="text-black">Shoes</option>
-              <option value="Sneakers" className="text-black">Sneakers</option>
-              <option value="Sliders" className="text-black">Sliders</option>
-              <option value="Cap" className="text-black">Cap</option>
-              <option value="Chain" className="text-black">Chain / Bracelet</option>
-            </select>
-            <button onClick={confirmUpload} className="w-full bg-[var(--text-main)] text-[var(--bg-main)] rounded-xl py-4 font-medium flex justify-center items-center gap-2 shadow-lg"><Check size={18} /> Save to Wardrobe</button>
-          </div>
-        </div>
-      )}
-
-      {/* SETTINGS MODAL */}
-      {showSettings && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md glass-nav rounded-t-[40px] sm:rounded-[40px] p-8 animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="font-serif text-2xl">{t.profile}</h2>
-              <button onClick={() => setShowSettings(false)} className="w-10 h-10 rounded-full glass-panel flex items-center justify-center"><X size={20} /></button>
-            </div>
-
-            <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
-              
-              <div className="flex flex-col items-center gap-3">
-                <label className="relative w-24 h-24 rounded-full glass-panel flex flex-col items-center justify-center cursor-pointer overflow-hidden border-2 border-[var(--text-muted)] border-dashed">
-                  {avatar ? <img src={avatar} className="w-full h-full object-cover" /> : <Camera size={24} className="text-[var(--text-muted)]" />}
-                  <input type="file" accept="image/*" onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (event) => setAvatar(event.target?.result as string);
-                      reader.readAsDataURL(file);
-                    }
-                  }} className="hidden" />
-                </label>
-                <span className="text-xs text-[var(--text-muted)]">Tap to change</span>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-[var(--text-muted)] uppercase">{t.name}</label>
-                <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} className="w-full glass-panel px-4 py-3 rounded-xl outline-none text-sm font-medium" />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-[var(--text-muted)] uppercase">{t.gender}</label>
-                <div className="flex gap-2">
-                  {["Male", "Female", "Other"].map(g => (
-                    <button key={g} onClick={() => setGender(g)} className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${gender === g ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-md' : 'glass-panel'}`}>{g}</button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-[var(--text-muted)] uppercase">{t.theme}</label>
-                <div className="flex gap-2">
-                  <button onClick={() => setIsDark(false)} className={`flex-1 py-3 rounded-xl text-sm font-medium flex justify-center gap-2 items-center transition-all ${!isDark ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-md' : 'glass-panel'}`}><Sun size={16} /> Light</button>
-                  <button onClick={() => setIsDark(true)} className={`flex-1 py-3 rounded-xl text-sm font-medium flex justify-center gap-2 items-center transition-all ${isDark ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-md' : 'glass-panel'}`}><Moon size={16} /> Dark</button>
-                </div>
-              </div>
-
-              <button onClick={() => setShowSettings(false)} className="w-full bg-[var(--text-main)] text-[var(--bg-main)] rounded-xl py-4 font-medium flex justify-center items-center gap-2 mt-4 shadow-lg"><Check size={18} /> {t.save}</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* FLOATING CAPSULE TABS */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-md glass-nav rounded-full px-2 py-2 flex justify-between items-center z-50">
-        {[
-          { id: "studio", icon: Wand2, label: t.studio },
-          { id: "wardrobe", icon: Shirt, label: t.wardrobe },
-          { id: "avatar", icon: User, label: t.avatar },
-          { id: "discover", icon: Compass, label: t.discover }
-        ].map((tab) => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative flex flex-col items-center justify-center gap-1 w-full py-3 rounded-full transition-all duration-300 ${activeTab === tab.id ? "text-[var(--text-main)] scale-105" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"}`}>
-            {activeTab === tab.id && <div className="absolute inset-0 bg-white/70 dark:bg-white/15 rounded-full shadow-sm -z-10 animate-in zoom-in-95 duration-200" />}
-            <tab.icon size={22} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
-            <span className="text-[10px] font-bold tracking-wide">{tab.label}</span>
-          </button>
-        ))}
-      </nav>
-    </div>
-  );
-}
+      reason = t.emptywardrobe;
+      if (
