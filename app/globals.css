@@ -2,56 +2,50 @@
 
 :root {
   --bg-main: #f5f3ee;
-  /* 100% Transparent Glass settings */
-  --bg-panel: rgba(255, 255, 255, 0.15);
-  --bg-nav: rgba(255, 255, 255, 0.2);
+  --bg-panel: rgba(255, 255, 255, 0.4);
+  --bg-nav: rgba(255, 255, 255, 0.6);
   --text-main: #1c1c1a;
-  --text-muted: #6b6b6b;
-  --border-color: rgba(255, 255, 255, 0.4);
+  --text-muted: #8e8e88;
+  --border-color: rgba(255, 255, 255, 0.8);
   --red-aura: #ff2a2a;
-  
-  /* Inner highlights for that 3D Apple look */
-  --shadow-nav: 0 20px 40px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-  --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  --shadow-nav: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+  --shadow-panel: 0 4px 20px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .dark-mode {
   --bg-main: #11110f;
-  --bg-panel: rgba(30, 30, 28, 0.3);
-  --bg-nav: rgba(30, 30, 28, 0.4);
+  --bg-panel: rgba(30, 30, 28, 0.4);
+  --bg-nav: rgba(25, 25, 23, 0.5);
   --text-main: #f5f3ee;
-  --text-muted: #a3a3a3;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --shadow-nav: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2);
-  --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  --text-muted: #8e8e88;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --shadow-nav: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-panel: 0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 body {
   background-color: var(--bg-main);
   color: var(--text-main);
-  transition: background-color 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
 }
 
-/* THE MAGIC APPLE GLASS */
+.font-agency {
+  font-family: Impact, "Arial Black", sans-serif;
+  letter-spacing: 1px;
+}
+
 .glass-panel {
   background: var(--bg-panel);
-  /* Heavy blur and saturation makes the background colors bleed through */
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-panel);
 }
 
 .glass-nav {
   background: var(--bg-nav);
-  backdrop-filter: blur(48px) saturate(250%);
-  -webkit-backdrop-filter: blur(48px) saturate(250%);
+  backdrop-filter: blur(40px) saturate(250%);
+  -webkit-backdrop-filter: blur(40px) saturate(250%);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-nav);
-}
-
-.font-agency {
-  font-family: Impact, "Arial Black", sans-serif;
-  letter-spacing: 2px;
 }
