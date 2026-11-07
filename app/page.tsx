@@ -117,4 +117,349 @@ export default function AuraApp() {
 
     if (wardrobe.length === 0) {
       reason = t.emptywardrobe;
-      if (
+      if (likedStyles.includes("Streetwear")) items = ["Oversized Tee", "Cargo Pants", "Sneakers", "Beanie"];
+      else if (likedStyles.includes("Party")) items = ["Black Shirt", "Trousers", "Loafers", "Chain"];
+      else if (isCold) items = ["Trench Coat", "Knit Sweater", "Boots"];
+      else if (isHot) items = ["Linen Shirt", "Shorts", "Sliders"];
+      else items = ["White Tee", "Jeans", "Sneakers", "Watch"];
+    } else {
+      if (tops.length > 0) items.push(shuffle([...tops])[0].name);
+      if (bottoms.length > 0) items.push(shuffle([...bottoms])[0].name);
+      if (shoes.length > 0) items.push(shuffle([...shoes])[0].name);
+      if (extras.length > 0) items.push(shuffle([...extras])[0].name);
+
+      if (items.length < 3) {
+        reason = t.hybridwardrobe;
+        if (!tops.length) items.push(isCold ? "Sweater" : "Graphic Tee");
+        if (!bottoms.length) items.push(isHot ? "Shorts" : "Jeans");
+        if (!shoes.length) items.push(isHot ? "Sliders" : "Sneakers");
+        if (!extras.length) items.push("Accessory");
+      } else {
+        reason = t.fullwardrobe;
+      }
+    }
+    setOutfit({ title: `${selectedSeason !== "Any" ? selectedSeason : ""} Look`, items: shuffle(items), reason });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => { setPendingImage(event.target?.result as string); setSelectedType("auto"); setShowUploadModal(true); };
+    reader.readAsDataURL(file);
+    e.target.value = ''; 
+  };
+
+  const confirmUpload = () => {
+    if (!pendingImage) return;
+    let finalType = selectedType;
+    let finalName = "";
+    if (selectedType === "auto") {
+      const types = ["Shirt", "Jeans", "Shoes", "Cap", "Accessory"];
+      finalType = types[wardrobe.length % types.length];
+      finalName = `AI ${finalType}`;
+    } else { finalType = selectedType; finalName = selectedType; }
+    setWardrobe(prev => [...prev, { id: Date.now().toString(), name: finalName, type: finalType, img: pendingImage }]);
+    setShowUploadModal(false); setPendingImage(null);
+  };
+
+  const handleFaceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => { setFaceImage(event.target?.result as string); setAvatarGenerated(false); };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLike = (id: string) => {
+    setLikedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    setDislikedItems(prev => prev.filter(i => i !== id));
+  };
+  const handleDislike = (id: string) => {
+    setDislikedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    setLikedItems(prev => prev.filter(i => i !== id));
+  };
+
+  const occasionTags = ["Casual", "Streetwear", "Formal", "Aesthetic", "Funky", "Date Night"];
+
+  return (
+    <div className="min-h-screen relative overflow-hidden pb-24 font-sans">
+      <div className="fixed inset-0 -z-10 bg-[var(--bg-main)] transition-colors duration-500">
+         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[#e0dcd3] dark:bg-[#1c1c1a] blur-[120px] opacity-70 pointer-events-none" />
+      </div>
+
+      <div className="px-5 pt-8 flex flex-col gap-6 max-w-md mx-auto relative z-10">
+        
+        {/* HEADER (Sleek & Small) */}
+        <header className="flex justify-between items-center">
+          <h1 className="font-agency text-[#ff2a2a] text-3xl mt-1 tracking-widest drop-shadow-sm">AURA</h1>
+          <button onClick={() => setShowSettings(true)} className="w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-sm overflow-hidden">
+            {avatar ? <img src={avatar} className="w-full h-full object-cover" /> : <User size={18} />}
+          </button>
+        </header>
+
+        {/* STUDIO TAB */}
+        {activeTab === "studio" && (
+          <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <section className="mt-1 flex flex-col gap-2">
+              <h2 className="font-serif text-4xl leading-[1.05] tracking-tight">{t.welcome}, {userName.split(' ')[0]}.</h2>
+              <p className="text-[var(--text-muted)] text-xs max-w-sm leading-relaxed">{t.desc}</p>
+            </section>
+
+            <section className="flex flex-col gap-3">
+              <div className="glass-panel rounded-[28px] p-2 flex flex-col gap-2 transition-all">
+                <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full bg-transparent border-none outline-none resize-none px-3 pt-2 pb-0 text-sm placeholder:text-[var(--text-muted)]" rows={2} />
+                
+                <div className="px-2 pb-1 flex flex-wrap gap-1.5">
+                  <select value={selectedSeason} onChange={(e) => setSelectedSeason(e.target.value)} className="glass-panel px-2 py-1 rounded-md text-[11px] font-medium outline-none">
+                    <option value="Any">Any Season</option>
+                    <option value="Summer">Summer</option>
+                    <option value="Winter">Winter</option>
+                  </select>
+                  <select value={selectedWeather} onChange={(e) => setSelectedWeather(e.target.value)} className="glass-panel px-2 py-1 rounded-md text-[11px] font-medium outline-none">
+                    <option value="Any">Any Weather</option>
+                    <option value="Hot">Hot</option>
+                    <option value="Cold">Cold</option>
+                  </select>
+                </div>
+
+                <div className="flex justify-between items-center px-1 pb-1">
+                  <span className="text-[10px] font-medium text-[var(--text-muted)] flex items-center gap-1"><Sparkles size={12} /> {t.ai}</span>
+                  <button onClick={handleGenerate} className="bg-[var(--text-main)] text-[var(--bg-main)] rounded-full px-4 py-2 text-xs font-medium flex items-center gap-1 hover:opacity-80 active:scale-95 transition-all shadow-md">
+                    {t.create} <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex overflow-x-auto gap-1.5 pb-1 -mx-5 px-5 scrollbar-hide">
+                {occasionTags.map(tag => (
+                  <button key={tag} onClick={() => setPrompt(tag)} className="whitespace-nowrap glass-panel px-3 py-1.5 rounded-full text-[11px] font-medium hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition-all text-[var(--text-main)]">
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {outfit && (
+              <section className="glass-panel p-5 rounded-3xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles size={14} className="text-[var(--text-muted)]" />
+                  <h3 className="font-medium text-sm">{outfit.title}</h3>
+                </div>
+                <div className="space-y-2 mb-3">
+                  {outfit.items.map((item: string, i: number) => (
+                    <div key={i} className="flex items-center gap-2 bg-black/5 dark:bg-white/5 p-2 rounded-xl">
+                      <div className="w-8 h-8 rounded-lg bg-[var(--bg-main)] flex items-center justify-center"><Shirt size={14} /></div>
+                      <span className="text-xs font-medium">{item}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed italic">"{outfit.reason}"</p>
+              </section>
+            )}
+          </div>
+        )}
+
+        {/* WARDROBE TAB */}
+        {activeTab === "wardrobe" && (
+          <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex justify-between items-center">
+              <h2 className="font-serif text-3xl tracking-tight">{t.wardrobe}</h2>
+              <button onClick={() => fileInputRef.current?.click()} className="w-9 h-9 rounded-full bg-[var(--text-main)] text-[var(--bg-main)] flex items-center justify-center shadow-md active:scale-95 transition-transform"><Plus size={18} /></button>
+              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+            </div>
+            
+            <div className="glass-panel flex items-center px-3 py-2.5 rounded-xl gap-2">
+              <Search size={16} className="text-[var(--text-muted)]" />
+              <input type="text" placeholder={t.search} className="bg-transparent border-none outline-none w-full text-xs" />
+            </div>
+
+            {wardrobe.length === 0 ? (
+              <p className="text-[var(--text-muted)] text-xs text-center mt-8">{t.emptywardrobe}</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {wardrobe.map((item) => (
+                  <div key={item.id} className="glass-panel rounded-2xl overflow-hidden aspect-[3/4] relative flex flex-col">
+                    <img src={item.img} className="w-full h-full object-cover" />
+                    <div className="absolute bottom-0 left-0 w-full bg-black/60 backdrop-blur-md p-1.5 text-white">
+                      <p className="text-[10px] font-bold truncate">{item.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* AVATAR TAB */}
+        {activeTab === "avatar" && (
+          <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-300 min-h-[50vh]">
+            <h2 className="font-serif text-3xl tracking-tight">Your Character</h2>
+            
+            {!faceImage ? (
+              <div className="flex flex-col items-center justify-center mt-8 glass-panel p-6 rounded-2xl">
+                <div className="w-16 h-16 rounded-full glass-panel flex items-center justify-center mb-3"><User size={30} strokeWidth={1} className="text-[var(--text-muted)]" /></div>
+                <h3 className="font-serif text-lg text-center mb-1">Meet your digital self.</h3>
+                <p className="text-[var(--text-muted)] text-center text-[11px] mb-5">Upload a face photo to personalise your avatar.</p>
+                <button onClick={() => faceInputRef.current?.click()} className="bg-[var(--text-main)] text-[var(--bg-main)] rounded-full px-6 py-2 text-xs font-medium active:scale-95 transition-transform shadow-md">{t.upload_face}</button>
+                <input type="file" accept="image/*" ref={faceInputRef} onChange={handleFaceUpload} className="hidden" />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[var(--bg-main)] flex justify-center items-end shadow-lg">
+                  <img src={BASE_AVATAR} className="absolute inset-0 w-full h-full object-cover" />
+                  {!avatarGenerated ? (
+                    <div className="relative z-10 flex flex-col items-center mb-8 animate-in zoom-in-95">
+                      <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[var(--text-main)] shadow-xl mb-4">
+                        <img src={faceImage} className="w-full h-full object-cover" />
+                      </div>
+                      <button onClick={() => setAvatarGenerated(true)} className="bg-[var(--text-main)] text-[var(--bg-main)] rounded-full px-5 py-2 text-xs font-medium shadow-md flex items-center gap-1.5 hover:opacity-90 transition">
+                        <Sparkles size={14} /> Generate
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="relative z-10 flex flex-col items-center mb-5 animate-in zoom-in-95 duration-500">
+                       <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#ff2a2a] shadow-[0_0_20px_rgba(255,42,42,0.4)] mb-1 relative top-[45px]">
+                        <img src={faceImage} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
+                         <p className="text-white text-[10px] font-bold uppercase tracking-widest">Generated</p>
+                      </div>
+                      <button onClick={() => setFaceImage(null)} className="mt-2 text-[10px] font-medium text-white bg-black/50 px-3 py-1 rounded-full backdrop-blur-md">Reset</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* DISCOVER TAB */}
+        {activeTab === "discover" && (
+          <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <h2 className="font-serif text-3xl tracking-tight mb-1">{t.discover}</h2>
+            <div className="columns-2 gap-3 space-y-3">
+              {DISCOVER_IMAGES.map((img) => (
+                <div key={img.id} className={`relative rounded-2xl overflow-hidden break-inside-avoid h-52 group transition-all duration-300 ${dislikedItems.includes(img.id) ? 'opacity-40 grayscale' : ''}`}>
+                  <img src={img.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
+                  <div className="absolute bottom-0 left-0 w-full p-2.5 flex justify-between items-end">
+                    <p className="text-white text-[11px] font-medium">{img.title}</p>
+                    <div className="flex gap-1.5">
+                      <button onClick={() => handleDislike(img.id)} className={`w-7 h-7 rounded-full backdrop-blur-md flex items-center justify-center transition ${dislikedItems.includes(img.id) ? 'bg-[#ff2a2a] text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}>
+                        <X size={12} />
+                      </button>
+                      <button onClick={() => handleLike(img.id)} className={`w-7 h-7 rounded-full backdrop-blur-md flex items-center justify-center transition ${likedItems.includes(img.id) ? 'bg-[#ff2a2a] text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}>
+                        <Heart size={12} className={likedItems.includes(img.id) ? "fill-white" : ""} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* MODALS & NAVIGATION ... */}
+      {showUploadModal && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md glass-nav rounded-t-[32px] sm:rounded-[32px] p-5 animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="font-serif text-lg">Add to Wardrobe</h2>
+              <button onClick={() => setShowUploadModal(false)} className="w-7 h-7 rounded-full glass-panel flex items-center justify-center"><X size={16} /></button>
+            </div>
+            {pendingImage && <div className="w-full h-40 rounded-xl overflow-hidden mb-3 border border-black/10 dark:border-white/10"><img src={pendingImage} className="w-full h-full object-cover" /></div>}
+            <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase mb-1.5 block">{t.manual_select}</label>
+            <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="w-full glass-panel px-3 py-2 rounded-lg outline-none text-xs font-medium mb-4 appearance-none">
+              <option value="auto" className="text-black">✨ {t.auto_detect}</option>
+              <option value="Shirt" className="text-black">Shirt</option>
+              <option value="Jeans" className="text-black">Jeans</option>
+              <option value="Shoes" className="text-black">Shoes</option>
+              <option value="Sliders" className="text-black">Sliders</option>
+              <option value="Cap" className="text-black">Cap</option>
+              <option value="Chain" className="text-black">Chain</option>
+            </select>
+            <button onClick={confirmUpload} className="w-full bg-[var(--text-main)] text-[var(--bg-main)] rounded-lg py-3 text-sm font-medium flex justify-center items-center gap-1.5 shadow-md"><Check size={16} /> Save</button>
+          </div>
+        </div>
+      )}
+
+      {showSettings && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md glass-nav rounded-t-[32px] sm:rounded-[32px] p-6 animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300">
+            <div className="flex justify-between items-center mb-5">
+              <h2 className="font-serif text-xl">{t.profile}</h2>
+              <button onClick={() => setShowSettings(false)} className="w-8 h-8 rounded-full glass-panel flex items-center justify-center"><X size={18} /></button>
+            </div>
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+              
+              <div className="flex flex-col items-center gap-2">
+                <label className="relative w-20 h-20 rounded-full glass-panel flex flex-col items-center justify-center cursor-pointer overflow-hidden border-2 border-[var(--text-muted)] border-dashed">
+                  {avatar ? <img src={avatar} className="w-full h-full object-cover" /> : <Camera size={20} className="text-[var(--text-muted)]" />}
+                  <input type="file" accept="image/*" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => setAvatar(event.target?.result as string);
+                      reader.readAsDataURL(file);
+                    }
+                  }} className="hidden" />
+                </label>
+                <span className="text-[10px] text-[var(--text-muted)]">Tap to change</span>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase">{t.name}</label>
+                <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} className="w-full glass-panel px-3 py-2 rounded-lg outline-none text-xs font-medium" />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase">{t.gender}</label>
+                <div className="flex gap-1.5">
+                  {["Male", "Female", "Other"].map(g => (
+                    <button key={g} onClick={() => setGender(g)} className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${gender === g ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}>{g}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase">{t.lang}</label>
+                <div className="flex gap-1.5">
+                  <button onClick={() => setLang("en")} className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${lang === 'en' ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}>English</button>
+                  <button onClick={() => setLang("hi")} className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${lang === 'hi' ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}>हिंदी</button>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase">{t.theme}</label>
+                <div className="flex gap-1.5">
+                  <button onClick={() => setIsDark(false)} className={`flex-1 py-2 rounded-lg text-xs font-medium flex justify-center gap-1.5 items-center transition-all ${!isDark ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}><Sun size={14} /> Light</button>
+                  <button onClick={() => setIsDark(true)} className={`flex-1 py-2 rounded-lg text-xs font-medium flex justify-center gap-1.5 items-center transition-all ${isDark ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}><Moon size={14} /> Dark</button>
+                </div>
+              </div>
+
+              <button onClick={() => setShowSettings(false)} className="w-full bg-[var(--text-main)] text-[var(--bg-main)] rounded-lg py-3 text-sm font-medium flex justify-center items-center gap-1.5 mt-2 shadow-md"><Check size={16} /> {t.save}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING CAPSULE TABS (Sleek size) */}
+      <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm glass-nav rounded-full px-1.5 py-1.5 flex justify-between items-center z-50">
+        {[
+          { id: "studio", icon: Wand2, label: t.studio },
+          { id: "wardrobe", icon: Shirt, label: t.wardrobe },
+          { id: "avatar", icon: User, label: t.avatar },
+          { id: "discover", icon: Compass, label: t.discover }
+        ].map((tab) => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative flex flex-col items-center justify-center gap-0.5 w-full py-2 rounded-full transition-all duration-300 ${activeTab === tab.id ? "text-[var(--text-main)] scale-105" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"}`}>
+            {activeTab === tab.id && <div className="absolute inset-0 bg-white/70 dark:bg-white/15 rounded-full shadow-sm -z-10 animate-in zoom-in-95 duration-200" />}
+            <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
+            <span className="text-[9px] font-bold tracking-wide">{tab.label}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}
