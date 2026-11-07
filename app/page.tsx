@@ -190,10 +190,10 @@ export default function AuraApp() {
   const occasionTags = ["Casual", "Streetwear", "Formal", "Aesthetic", "Funky", "Date Night"];
 
   return (
-    <div className="min-h-screen relative overflow-hidden pb-32 font-sans">
+    <div className="min-h-screen relative overflow-hidden pb-32 font-sans"
       <div className="fixed inset-0 -z-10 bg-[var(--bg-main)] transition-colors duration-500">
-        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[#e0dcd3] dark:bg-[#1c1c1a] blur-[120px] opacity-70 pointer-events-none" />
-      </div>
+  <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] rounded-full bg-[#ff2a2a] blur-[150px] opacity-10 dark:opacity-20 pointer-events-none" />
+  <div className="absolute bottom-[-10%] right-[-20%] w-[80%] h-[80%] rounded-full bg-[#e0dcd3] dark:bg-[#2a2a28] blur-[150px] opacity-60 pointer-events-none" />
 
       <div className="px-6 pt-10 flex flex-col gap-8 max-w-md mx-auto relative z-10">
         <header className="flex justify-between items-center">
