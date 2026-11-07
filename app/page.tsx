@@ -191,9 +191,14 @@ export default function AuraApp() {
 
   return (
     <div className="min-h-screen relative overflow-hidden pb-32 font-sans"
-      <div className="fixed inset-0 -z-10 bg-[var(--bg-main)] transition-colors duration-500">
-  <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] rounded-full bg-[#ff2a2a] blur-[150px] opacity-10 dark:opacity-20 pointer-events-none" />
-  <div className="absolute bottom-[-10%] right-[-20%] w-[80%] h-[80%] rounded-full bg-[#e0dcd3] dark:bg-[#2a2a28] blur-[150px] opacity-60 pointer-events-none" />
+            <div className="fixed inset-0 -z-10 bg-[var(--bg-main)] transition-colors duration-500 overflow-hidden">
+        <img 
+          src="https://images.unsplash.com/photo-1550614000-4b95d858288d?q=80&w=2000&auto=format&fit=crop" 
+          className="absolute inset-0 w-full h-full object-cover opacity-60 dark:opacity-30 blur-sm scale-105" 
+          alt="background"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--bg-main)] opacity-80" />
+      </div>
 
       <div className="px-6 pt-10 flex flex-col gap-8 max-w-md mx-auto relative z-10">
         <header className="flex justify-between items-center">
