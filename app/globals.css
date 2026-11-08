@@ -24,7 +24,6 @@
 }
 
 html {
-  /* THIS FORCES THE APP TO BE SMALLER */
   font-size: 14px; 
 }
 
@@ -32,6 +31,8 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
+  /* THIS FIXES THE SWIPING */
+  touch-action: pan-y; 
 }
 
 .font-agency {
@@ -53,4 +54,13 @@ body {
   -webkit-backdrop-filter: blur(40px) saturate(250%);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-nav);
+}
+
+/* HIDES THE SCROLLBAR FOR THE PILLS */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
