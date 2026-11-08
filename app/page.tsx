@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
-import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Layers, Plus, Search, X, Check, Moon, Sun, Camera, Heart, Loader2 } from "lucide-react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { useState, useRef, useEffect } from "react";
+import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Layers, Plus, Search, X, Check, Moon, Sun, Camera, Heart } from "lucide-react";
 import { AvatarCreator } from "@readyplayerme/react-avatar-creator";
 
 const dict = {
@@ -33,31 +31,13 @@ const dict = {
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
-const SAMPLE_AVATAR_URL = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF-Binary/CesiumMan.glb";
+const DUMMY_IMAGE = "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop";
 
 const DISCOVER_IMAGES = [
   { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal", styleTag: "Minimal" },
   { id: "d2", url: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop", title: "Streetwear", styleTag: "Streetwear" },
   { id: "d3", url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop", title: "Night Out", styleTag: "Party" },
 ];
-
-function AvatarModel({ url }: { url: string }) {
-  const { scene } = useGLTF(url);
-  return <primitive object={scene} scale={2} position={[0, -1.5, 0]} />;
-}
-
-function AvatarCanvas({ url }: { url: string }) {
-  return (
-    <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-      <ambientLight intensity={2} />
-      <directionalLight position={[10, 10, 5]} intensity={3} />
-      <Suspense fallback={null}>
-        <AvatarModel url={url} />
-      </Suspense>
-      <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 3} maxPolarAngle={Math.PI / 2} />
-    </Canvas>
-  );
-}
 
 export default function AuraApp() {
   const [activeTab, setActiveTab] = useState("studio");
@@ -80,7 +60,6 @@ export default function AuraApp() {
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string>("auto");
 
-  const [avatarUrl, setAvatarUrl] = useState(SAMPLE_AVATAR_URL);
   const [showAvatarCreator, setShowAvatarCreator] = useState(false);
 
   const [likedItems, setLikedItems] = useState<string[]>([]);
@@ -103,7 +82,7 @@ export default function AuraApp() {
 
     const handleMove = (e: TouchEvent) => {
       if (!isDragging) return;
-      e.preventDefault(); // Stops Safari from scrolling the page
+      e.preventDefault();
       updateTabFromTouch(e.touches[0].clientX);
     };
 
@@ -111,7 +90,6 @@ export default function AuraApp() {
       setIsDragging(false);
     };
 
-    // { passive: false } is REQUIRED for preventDefault() to work in modern browsers
     nav.addEventListener("touchstart", handleStart);
     nav.addEventListener("touchmove", handleMove, { passive: false });
     nav.addEventListener("touchend", handleEnd);
@@ -148,8 +126,6 @@ export default function AuraApp() {
       if (savedDark) setIsDark(savedDark === "true");
       const savedAvatar = localStorage.getItem("aura_avatar");
       if (savedAvatar) setAvatar(savedAvatar);
-      const savedAvatarUrl = localStorage.getItem("aura_3d_avatar");
-      if (savedAvatarUrl) setAvatarUrl(savedAvatarUrl);
       const savedLikes = localStorage.getItem("aura_likes");
       if (savedLikes) setLikedItems(JSON.parse(savedLikes));
       const savedDislikes = localStorage.getItem("aura_dislikes");
@@ -166,11 +142,10 @@ export default function AuraApp() {
       localStorage.setItem("aura_likes", JSON.stringify(likedItems));
       localStorage.setItem("aura_dislikes", JSON.stringify(dislikedItems));
       if (avatar) localStorage.setItem("aura_avatar", avatar);
-      if (avatarUrl) localStorage.setItem("aura_3d_avatar", avatarUrl);
       if (isDark) document.documentElement.classList.add("dark-mode");
       else document.documentElement.classList.remove("dark-mode");
     }
-  }, [wardrobe, userName, gender, isDark, avatar, likedItems, dislikedItems, avatarUrl]);
+  }, [wardrobe, userName, gender, isDark, avatar, likedItems, dislikedItems]);
 
   const t = dict[lang];
 
@@ -244,7 +219,6 @@ export default function AuraApp() {
               subdomain="demo" 
               config={{ clearCache: true }}
               onAvatarExported={(event) => {
-                setAvatarUrl(event.data.url);
                 setShowAvatarCreator(false);
               }}
             />
@@ -358,15 +332,10 @@ export default function AuraApp() {
 
         {activeTab === "avatar" && (
           <div className="flex flex-col gap-5 min-h-[50vh] animate-in fade-in zoom-in-95 duration-200">
-            <h2 className="font-serif text-3xl tracking-tight">Your 3D Character</h2>
+            <h2 className="font-serif text-3xl tracking-tight">Your Character</h2>
             
             <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg flex items-center justify-center">
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                 <Loader2 className="animate-spin text-[var(--text-muted)]" size={32} />
-              </div>
-              <div className="absolute inset-0 z-10">
-                <AvatarCanvas url={avatarUrl} />
-              </div>
+              <img src={DUMMY_IMAGE} className="w-full h-full object-cover" />
             </div>
 
             <div className="glass-panel p-4 rounded-2xl space-y-4 relative z-20">
@@ -377,7 +346,7 @@ export default function AuraApp() {
                 <Sparkles size={16} /> Build Custom 3D Avatar
               </button>
               <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed">
-                This opens the free Ready Player Me editor. You can customize your face, body, and clothes.
+                This opens the free Ready Player Me editor to design your character.
               </p>
             </div>
           </div>
@@ -492,12 +461,10 @@ export default function AuraApp() {
         </div>
       )}
 
-      {/* SLIDING NAVIGATION BAR WITH TOUCH TRACKING */}
       <nav 
         ref={navRef}
         className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm glass-nav rounded-full p-1.5 flex justify-between items-center z-50 touch-none"
       >
-        {/* The Sliding Glass Pill */}
         <div 
           className={`absolute top-1.5 bottom-1.5 bg-white/70 dark:bg-white/15 rounded-full shadow-sm ${isDragging ? '' : 'transition-all duration-300 ease-out'}`}
           style={{ 
