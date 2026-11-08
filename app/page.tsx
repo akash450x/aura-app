@@ -475,3 +475,46 @@ export default function AuraApp() {
               <div className="space-y-1">
                 <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase">{t.name}</label>
                 <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} className="w-full glass-panel px-3 py-2 rounded-lg outline-none text-xs font-medium" />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase">{t.gender}</label>
+                <div className="flex gap-1.5">
+                  {["Male", "Female", "Other"].map(g => (
+                    <button key={g} onClick={() => setGender(g)} className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${gender === g ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}>{g}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase">{t.theme}</label>
+                <div className="flex gap-1.5">
+                  <button onClick={() => setIsDark(false)} className={`flex-1 py-2 rounded-lg text-xs font-medium flex justify-center gap-1.5 items-center transition-all ${!isDark ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}><Sun size={14} /> Light</button>
+                  <button onClick={() => setIsDark(true)} className={`flex-1 py-2 rounded-lg text-xs font-medium flex justify-center gap-1.5 items-center transition-all ${isDark ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}><Moon size={14} /> Dark</button>
+                </div>
+              </div>
+
+              <button onClick={() => setShowSettings(false)} className="w-full bg-[var(--text-main)] text-[var(--bg-main)] rounded-lg py-3 text-sm font-medium flex justify-center items-center gap-1.5 mt-2 shadow-md"><Check size={16} /> {t.save}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING CAPSULE TABS */}
+      <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm glass-nav rounded-full px-1.5 py-1.5 flex justify-between items-center z-50">
+        {[
+          { id: "studio", icon: Wand2, label: t.studio },
+          { id: "wardrobe", icon: Shirt, label: t.wardrobe },
+          { id: "avatar", icon: User, label: t.avatar },
+          { id: "discover", icon: Compass, label: t.discover }
+        ].map((tab) => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative flex flex-col items-center justify-center gap-0.5 w-full py-2 rounded-full transition-all duration-300 ${activeTab === tab.id ? "text-[var(--text-main)] scale-105" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"}`}>
+            {activeTab === tab.id && <div className="absolute inset-0 bg-white/70 dark:bg-white/15 rounded-full shadow-sm -z-10" />}
+            <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
+            <span className="text-[9px] font-bold tracking-wide">{tab.label}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}
