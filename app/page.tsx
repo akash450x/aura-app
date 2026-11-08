@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Layers, Plus, Search, X, Check, Moon, Sun, Camera, Heart, SlidersHorizontal } from "lucide-react";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Layers, Plus, Search, X, Check, Moon, Sun, Camera, Heart, Loader2 } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
-import { AvatarCreator, AvatarCreatorConfig } from "@readyplayerme/react-avatar-creator";
+import { AvatarCreator } from "@readyplayerme/react-avatar-creator";
 
 const dict = {
   en: {
@@ -33,7 +33,7 @@ const dict = {
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
-const SAMPLE_AVATAR_URL = "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb";
+const SAMPLE_AVATAR_URL = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF-Binary/CesiumMan.glb";
 
 const DISCOVER_IMAGES = [
   { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal", styleTag: "Minimal" },
@@ -41,9 +41,22 @@ const DISCOVER_IMAGES = [
   { id: "d3", url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop", title: "Night Out", styleTag: "Party" },
 ];
 
-function Avatar3D({ url }: { url: string }) {
+function AvatarModel({ url }: { url: string }) {
   const { scene } = useGLTF(url);
-  return <primitive object={scene} scale={1.8} position={[0, -2.5, 0]} />;
+  return <primitive object={scene} scale={2} position={[0, -1.5, 0]} />;
+}
+
+function AvatarCanvas({ url }: { url: string }) {
+  return (
+    <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+      <ambientLight intensity={2} />
+      <directionalLight position={[10, 10, 5]} intensity={3} />
+      <Suspense fallback={null}>
+        <AvatarModel url={url} />
+      </Suspense>
+      <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 3} maxPolarAngle={Math.PI / 2} />
+    </Canvas>
+  );
 }
 
 export default function AuraApp() {
@@ -73,22 +86,53 @@ export default function AuraApp() {
   const [likedItems, setLikedItems] = useState<string[]>([]);
   const [dislikedItems, setDislikedItems] = useState<string[]>([]);
 
-  // SWIPE LOGIC
-  let touchStartX = 0;
-  let touchEndX = 0;
   const tabs = ["studio", "wardrobe", "avatar", "discover"];
+  
+  // SLIDER NAVIGATION LOGIC
+  const navRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleTouchStart = (e: React.TouchEvent) => { touchStartX = e.changedTouches[0].screenX; };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    touchEndX = e.changedTouches[0].screenX;
-    const swipeThreshold = 50;
-    if (touchEndX < touchStartX - swipeThreshold) {
-      const currentIndex = tabs.indexOf(activeTab);
-      if (currentIndex < tabs.length - 1) setActiveTab(tabs[currentIndex + 1]);
-    }
-    if (touchEndX > touchStartX + swipeThreshold) {
-      const currentIndex = tabs.indexOf(activeTab);
-      if (currentIndex > 0) setActiveTab(tabs[currentIndex - 1]);
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const handleStart = (e: TouchEvent) => {
+      setIsDragging(true);
+      updateTabFromTouch(e.touches[0].clientX);
+    };
+
+    const handleMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      e.preventDefault(); // Stops Safari from scrolling the page
+      updateTabFromTouch(e.touches[0].clientX);
+    };
+
+    const handleEnd = () => {
+      setIsDragging(false);
+    };
+
+    // { passive: false } is REQUIRED for preventDefault() to work in modern browsers
+    nav.addEventListener("touchstart", handleStart);
+    nav.addEventListener("touchmove", handleMove, { passive: false });
+    nav.addEventListener("touchend", handleEnd);
+
+    return () => {
+      nav.removeEventListener("touchstart", handleStart);
+      nav.removeEventListener("touchmove", handleMove);
+      nav.removeEventListener("touchend", handleEnd);
+    };
+  }, [isDragging]);
+
+  const updateTabFromTouch = (clientX: number) => {
+    if (!navRef.current) return;
+    const rect = navRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, x / rect.width));
+    const tabWidthPercent = 100 / tabs.length;
+    const currentTabIndex = Math.floor(percentage * tabs.length);
+    
+    if (currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+      setActiveTab(tabs[currentTabIndex]);
     }
   };
 
@@ -187,20 +231,24 @@ export default function AuraApp() {
   const occasionTags = ["Casual", "Streetwear", "Formal", "Aesthetic", "Funky", "Date Night"];
 
   return (
-    <div className="min-h-screen relative overflow-hidden pb-24 font-sans" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <div className="min-h-screen relative overflow-hidden pb-24 font-sans">
       
-      {/* READY PLAYER ME CREATOR OVERLAY */}
       {showAvatarCreator && (
-        <div className="fixed inset-0 z-[200] bg-black">
-          <button onClick={() => setShowAvatarCreator(false)} className="absolute top-4 right-4 z-[210] bg-white text-black p-2 rounded-full font-bold">Close X</button>
-          <AvatarCreator
-            subdomain="demo" 
-            config={{ clearCache: true }}
-            onAvatarExported={(event) => {
-              setAvatarUrl(event.data.url);
-              setShowAvatarCreator(false);
-            }}
-          />
+        <div className="fixed inset-0 z-[200] bg-black flex flex-col">
+          <div className="bg-black p-4 flex justify-between items-center text-white relative z-[210]">
+             <h3 className="font-serif text-lg">Create your 3D Avatar</h3>
+             <button onClick={() => setShowAvatarCreator(false)} className="bg-white/20 p-2 rounded-full text-white"><X size={18} /></button>
+          </div>
+          <div className="flex-1 relative">
+            <AvatarCreator
+              subdomain="demo" 
+              config={{ clearCache: true }}
+              onAvatarExported={(event) => {
+                setAvatarUrl(event.data.url);
+                setShowAvatarCreator(false);
+              }}
+            />
+          </div>
         </div>
       )}
 
@@ -217,9 +265,8 @@ export default function AuraApp() {
           </button>
         </header>
 
-        {/* STUDIO TAB */}
         {activeTab === "studio" && (
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-200">
             <section className="mt-1 flex flex-col gap-2">
               <h2 className="font-serif text-4xl leading-[1.05] tracking-tight">{t.welcome}, {userName.split(' ')[0]}.</h2>
               <p className="text-[var(--text-muted)] text-xs max-w-sm leading-relaxed">{t.desc}</p>
@@ -279,9 +326,8 @@ export default function AuraApp() {
           </div>
         )}
 
-        {/* WARDROBE TAB */}
         {activeTab === "wardrobe" && (
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center">
               <h2 className="font-serif text-3xl tracking-tight">{t.wardrobe}</h2>
               <button onClick={() => fileInputRef.current?.click()} className="w-9 h-9 rounded-full bg-[var(--text-main)] text-[var(--bg-main)] flex items-center justify-center shadow-md active:scale-95 transition-transform"><Plus size={18} /></button>
@@ -310,21 +356,20 @@ export default function AuraApp() {
           </div>
         )}
 
-        {/* AVATAR TAB - 3D CANVAS */}
         {activeTab === "avatar" && (
-          <div className="flex flex-col gap-5 min-h-[50vh]">
+          <div className="flex flex-col gap-5 min-h-[50vh] animate-in fade-in zoom-in-95 duration-200">
             <h2 className="font-serif text-3xl tracking-tight">Your 3D Character</h2>
             
-            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg">
-              <Canvas camera={{ position: [0, 0, 4], fov: 50 }}>
-                <ambientLight intensity={1.5} />
-                <directionalLight position={[10, 10, 5]} intensity={2} />
-                <Avatar3D url={avatarUrl} />
-                <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 3} maxPolarAngle={Math.PI / 2} />
-              </Canvas>
+            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                 <Loader2 className="animate-spin text-[var(--text-muted)]" size={32} />
+              </div>
+              <div className="absolute inset-0 z-10">
+                <AvatarCanvas url={avatarUrl} />
+              </div>
             </div>
 
-            <div className="glass-panel p-4 rounded-2xl space-y-4">
+            <div className="glass-panel p-4 rounded-2xl space-y-4 relative z-20">
               <button 
                 onClick={() => setShowAvatarCreator(true)}
                 className="w-full bg-[var(--text-main)] text-[var(--bg-main)] rounded-lg py-3 text-sm font-medium flex justify-center items-center gap-2 shadow-md hover:opacity-90 active:scale-95 transition-all"
@@ -332,15 +377,14 @@ export default function AuraApp() {
                 <Sparkles size={16} /> Build Custom 3D Avatar
               </button>
               <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed">
-                This opens the free Ready Player Me editor. You can customize your face, body, and clothes. When you save, it will load your personal 3D twin here.
+                This opens the free Ready Player Me editor. You can customize your face, body, and clothes.
               </p>
             </div>
           </div>
         )}
 
-        {/* DISCOVER TAB */}
         {activeTab === "discover" && (
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-200">
             <h2 className="font-serif text-3xl tracking-tight mb-1">{t.discover}</h2>
             <div className="columns-2 gap-3 space-y-3">
               {DISCOVER_IMAGES.map((img) => (
@@ -365,7 +409,6 @@ export default function AuraApp() {
         )}
       </div>
 
-      {/* WARDROBE UPLOAD MODAL */}
       {showUploadModal && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-md glass-nav rounded-t-[32px] sm:rounded-[32px] p-5">
@@ -389,7 +432,6 @@ export default function AuraApp() {
         </div>
       )}
 
-      {/* SETTINGS MODAL */}
       {showSettings && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-md glass-nav rounded-t-[32px] sm:rounded-[32px] p-6">
@@ -450,16 +492,30 @@ export default function AuraApp() {
         </div>
       )}
 
-      {/* FLOATING CAPSULE TABS */}
-      <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm glass-nav rounded-full px-1.5 py-1.5 flex justify-between items-center z-50">
+      {/* SLIDING NAVIGATION BAR WITH TOUCH TRACKING */}
+      <nav 
+        ref={navRef}
+        className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm glass-nav rounded-full p-1.5 flex justify-between items-center z-50 touch-none"
+      >
+        {/* The Sliding Glass Pill */}
+        <div 
+          className={`absolute top-1.5 bottom-1.5 bg-white/70 dark:bg-white/15 rounded-full shadow-sm ${isDragging ? '' : 'transition-all duration-300 ease-out'}`}
+          style={{ 
+            width: `calc(100% / 4 - 3px)`, 
+            left: `calc(${tabs.indexOf(activeTab)} * 100% / 4 + 1.5px)` 
+          }} 
+        />
+        
         {[
           { id: "studio", icon: Wand2, label: t.studio },
           { id: "wardrobe", icon: Shirt, label: t.wardrobe },
           { id: "avatar", icon: User, label: t.avatar },
           { id: "discover", icon: Compass, label: t.discover }
         ].map((tab) => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative flex flex-col items-center justify-center gap-0.5 w-full py-2 rounded-full transition-all duration-300 ${activeTab === tab.id ? "text-[var(--text-main)] scale-105" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"}`}>
-            {activeTab === tab.id && <div className="absolute inset-0 bg-white/70 dark:bg-white/15 rounded-full shadow-sm -z-10" />}
+          <button 
+            key={tab.id} 
+            className={`relative z-10 flex flex-col items-center justify-center gap-0.5 w-full py-2 rounded-full transition-colors duration-300 ${activeTab === tab.id ? "text-[var(--text-main)]" : "text-[var(--text-muted)]"}`}
+          >
             <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
             <span className="text-[9px] font-bold tracking-wide">{tab.label}</span>
           </button>
