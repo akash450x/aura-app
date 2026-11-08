@@ -30,6 +30,8 @@ const dict = {
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
+const DUMMY_IMAGE = "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop";
+
 const DISCOVER_IMAGES = [
   { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal", styleTag: "Minimal" },
   { id: "d2", url: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop", title: "Streetwear", styleTag: "Streetwear" },
@@ -56,8 +58,6 @@ export default function AuraApp() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string>("auto");
-
-  const [showAvatarCreator, setShowAvatarCreator] = useState(false);
 
   const [likedItems, setLikedItems] = useState<string[]>([]);
   const [dislikedItems, setDislikedItems] = useState<string[]>([]);
@@ -191,7 +191,7 @@ export default function AuraApp() {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-
+      
       <div className="fixed inset-0 -z-10 bg-[var(--bg-main)] transition-colors duration-500">
          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[#e0dcd3] dark:bg-[#1c1c1a] blur-[120px] opacity-70 pointer-events-none" />
       </div>
@@ -300,23 +300,18 @@ export default function AuraApp() {
           <div className="flex flex-col gap-5 min-h-[50vh] animate-in fade-in zoom-in-95 duration-200">
             <h2 className="font-serif text-3xl tracking-tight">Your Character</h2>
             
-            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg">
-              <iframe 
-                src="https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb" 
-                className="w-full h-full border-none"
-                title="3D Avatar"
-              />
+            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg flex items-center justify-center">
+              <img src={DUMMY_IMAGE} className="w-full h-full object-cover opacity-80" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm text-white">
+                <User size={48} className="mb-4" />
+                <p className="text-sm font-medium">3D Avatar Preview</p>
+                <p className="text-[10px] text-white/70 text-center px-8 mt-2">Ready Player Me integration requires a paid domain to remove the white label.</p>
+              </div>
             </div>
 
             <div className="glass-panel p-4 rounded-2xl space-y-4 relative z-20">
-              <button 
-                onClick={() => setShowAvatarCreator(true)}
-                className="w-full bg-[var(--text-main)] text-[var(--bg-main)] rounded-lg py-3 text-sm font-medium flex justify-center items-center gap-2 shadow-md hover:opacity-90 active:scale-95 transition-all"
-              >
-                <Sparkles size={16} /> Build Custom 3D Avatar
-              </button>
               <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed">
-                This opens the free Ready Player Me editor to design your character.
+                To enable the full 3D creator, connect a custom domain in Vercel settings.
               </p>
             </div>
           </div>
