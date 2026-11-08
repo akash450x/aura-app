@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Layers, Plus, Search, X, Check, Moon, Sun, Camera, Heart, SlidersHorizontal } from "lucide-react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, useGLTF } from "@react-three/drei";
 
 const dict = {
   en: {
@@ -13,7 +15,7 @@ const dict = {
     hybridwardrobe: "Mixed your wardrobe with AI suggestions.",
     profile: "Settings", name: "Your Name", gender: "Gender", lang: "Language", theme: "Appearance",
     save: "Save", search: "Search...",
-    season: "Season", weather: "Weather", upload_face: "Upload Face", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
+    season: "Season", weather: "Weather", upload_face: "Customize 3D Avatar", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
   },
   hi: {
     studio: "स्टूडियो", wardrobe: "वार्डरोब", avatar: "अवतार", discover: "खोजें",
@@ -24,20 +26,26 @@ const dict = {
     hybridwardrobe: "आपके कपड़ों और एआई का मिश्रण।",
     profile: "सेटिंग्स", name: "आपका नाम", gender: "लिंग", lang: "भाषा", theme: "थीम",
     save: "सहेजें", search: "खोजें...",
-    season: "मौसम", weather: "वेदर", upload_face: "चेहरा अपलोड करें", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
+    season: "मौसम", weather: "वेदर", upload_face: "3डी अवतार बनाएं", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
   }
 };
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
-const DUMMY_MALE = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop"; 
-const DUMMY_FEMALE = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop"; 
+// A SAMPLE READY PLAYER ME AVATAR (You can generate your own free URL at readyplayer.me)
+const SAMPLE_AVATAR_URL = "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb";
 
 const DISCOVER_IMAGES = [
   { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal", styleTag: "Minimal" },
   { id: "d2", url: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop", title: "Streetwear", styleTag: "Streetwear" },
   { id: "d3", url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop", title: "Night Out", styleTag: "Party" },
 ];
+
+// 3D Avatar Component
+function Avatar3D({ url }: { url: string }) {
+  const { scene } = useGLTF(url);
+  return <primitive object={scene} scale={1.8} position={[0, -2.5, 0]} />;
+}
 
 export default function AuraApp() {
   const [activeTab, setActiveTab] = useState("studio");
@@ -60,15 +68,10 @@ export default function AuraApp() {
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string>("auto");
 
-  // AVATAR CUSTOMIZATION STATE
-  const faceInputRef = useRef<HTMLInputElement>(null);
-  const [faceImage, setFaceImage] = useState<string | null>(null);
-  const [avatarGenerated, setAvatarGenerated] = useState(false);
-  
+  // 3D AVATAR STATE
+  const [avatarUrl, setAvatarUrl] = useState(SAMPLE_AVATAR_URL);
   const [bodyType, setBodyType] = useState("Fit");
-  const [height, setHeight] = useState(50);
-  const [weight, setWeight] = useState(50);
-  const [skinColor, setSkinColor] = useState("#e0ac69");
+  const [skinColor, setSkinColor] = useState("#f1c27d");
 
   const [likedItems, setLikedItems] = useState<string[]>([]);
   const [dislikedItems, setDislikedItems] = useState<string[]>([]);
@@ -104,8 +107,6 @@ export default function AuraApp() {
       if (savedDark) setIsDark(savedDark === "true");
       const savedAvatar = localStorage.getItem("aura_avatar");
       if (savedAvatar) setAvatar(savedAvatar);
-      const savedFace = localStorage.getItem("aura_face");
-      if (savedFace) { setFaceImage(savedFace); setAvatarGenerated(true); }
       const savedLikes = localStorage.getItem("aura_likes");
       if (savedLikes) setLikedItems(JSON.parse(savedLikes));
       const savedDislikes = localStorage.getItem("aura_dislikes");
@@ -122,11 +123,10 @@ export default function AuraApp() {
       localStorage.setItem("aura_likes", JSON.stringify(likedItems));
       localStorage.setItem("aura_dislikes", JSON.stringify(dislikedItems));
       if (avatar) localStorage.setItem("aura_avatar", avatar);
-      if (faceImage) localStorage.setItem("aura_face", faceImage);
       if (isDark) document.documentElement.classList.add("dark-mode");
       else document.documentElement.classList.remove("dark-mode");
     }
-  }, [wardrobe, userName, gender, isDark, avatar, faceImage, likedItems, dislikedItems]);
+  }, [wardrobe, userName, gender, isDark, avatar, likedItems, dislikedItems]);
 
   const t = dict[lang];
 
@@ -173,14 +173,6 @@ export default function AuraApp() {
     let finalName = selectedType === "auto" ? "AI Scanned Shirt" : selectedType;
     setWardrobe(prev => [...prev, { id: Date.now().toString(), name: finalName, type: finalType, img: pendingImage }]);
     setShowUploadModal(false); setPendingImage(null);
-  };
-
-  const handleFaceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => { setFaceImage(event.target?.result as string); setAvatarGenerated(false); };
-    reader.readAsDataURL(file);
   };
 
   const handleLike = (id: string) => {
@@ -252,29 +244,12 @@ export default function AuraApp() {
             </section>
 
             {outfit && (
-              <section className="glass-panel p-5 rounded-3xl flex flex-col gap-4">
-                
-                {/* 3D DUMMY PREVIEW WITH OUTFIT OVERLAY */}
-                <div className="w-full h-72 rounded-2xl overflow-hidden relative bg-[#e0dcd3] dark:bg-[#1c1c1a] flex justify-center items-center shadow-inner">
-                  <img src={gender === "Female" ? DUMMY_FEMALE : DUMMY_MALE} className="h-full object-cover opacity-90" style={{ filter: `sepia(0.3) hue-rotate(-10deg) saturate(1.2) brightness(${1 + (skinColor === "#8d5524" ? -0.3 : skinColor === "#f1c27d" ? 0.2 : 0)})` }} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  
-                  {/* Overlay Visuals to simulate clothes */}
-                  <div className="absolute inset-0 flex flex-col justify-center items-center opacity-60">
-                     <div className="w-32 h-24 bg-[var(--text-main)] rounded-lg mix-blend-multiply opacity-80 blur-[1px]" style={{ transform: `scaleY(${1 + weight/100})`}}></div>
-                     <div className="w-24 h-32 bg-[var(--text-main)] rounded-t-lg mix-blend-multiply opacity-80 blur-[1px] mt-1" style={{ transform: `scaleX(${1 + weight/100})`}}></div>
-                  </div>
-
-                  <div className="absolute bottom-4 left-4">
-                    <h3 className="text-white font-serif text-xl drop-shadow-md">{outfit.title}</h3>
-                  </div>
+              <section className="glass-panel p-5 rounded-3xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles size={14} className="text-[var(--text-muted)]" />
+                  <h3 className="font-medium text-sm">{outfit.title}</h3>
                 </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Sparkles size={14} className="text-[var(--text-muted)]" />
-                    <h3 className="font-medium text-sm">Outfit Details</h3>
-                  </div>
+                <div className="space-y-2 mb-3">
                   {outfit.items.map((item: string, i: number) => (
                     <div key={i} className="flex items-center gap-2 bg-black/5 dark:bg-white/5 p-2 rounded-xl">
                       <div className="w-8 h-8 rounded-lg bg-[var(--bg-main)] flex items-center justify-center"><Shirt size={14} /></div>
@@ -319,80 +294,59 @@ export default function AuraApp() {
           </div>
         )}
 
-        {/* AVATAR TAB - 3D DUMMY */}
+        {/* AVATAR TAB - 3D CANVAS */}
         {activeTab === "avatar" && (
           <div className="flex flex-col gap-5 min-h-[50vh]">
-            <h2 className="font-serif text-3xl tracking-tight">Your Character</h2>
+            <h2 className="font-serif text-3xl tracking-tight">Your 3D Character</h2>
             
-            {!faceImage ? (
-              <div className="flex flex-col items-center justify-center mt-8 glass-panel p-6 rounded-2xl">
-                <div className="w-16 h-16 rounded-full glass-panel flex items-center justify-center mb-3"><User size={30} strokeWidth={1} className="text-[var(--text-muted)]" /></div>
-                <h3 className="font-serif text-lg text-center mb-1">Meet your digital self.</h3>
-                <p className="text-[var(--text-muted)] text-center text-[11px] mb-5">Upload a face photo to apply it to your 3D dummy.</p>
-                <button onClick={() => faceInputRef.current?.click()} className="bg-[var(--text-main)] text-[var(--bg-main)] rounded-full px-6 py-2 text-xs font-medium active:scale-95 transition-transform shadow-md">{t.upload_face}</button>
-                <input type="file" accept="image/*" ref={faceInputRef} onChange={handleFaceUpload} className="hidden" />
+            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg">
+              <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+                <ambientLight intensity={1.5} />
+                <directionalLight position={[10, 10, 5]} intensity={2} />
+                <Avatar3D url={avatarUrl} />
+                <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 3} maxPolarAngle={Math.PI / 2} />
+              </Canvas>
+            </div>
+
+            <div className="glass-panel p-4 rounded-2xl space-y-4">
+              <div className="flex items-center gap-2 mb-2 text-[var(--text-main)]">
+                <SlidersHorizontal size={16} />
+                <h3 className="font-medium text-sm">Customize 3D Avatar</h3>
               </div>
-            ) : (
-              <div className="flex flex-col gap-4">
-                
-                {/* THE DUMMY CHARACTER */}
-                <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] flex justify-center items-center shadow-lg">
-                  <img 
-                    src={gender === "Female" ? DUMMY_FEMALE : DUMMY_MALE} 
-                    className="h-full object-contain transition-all duration-500" 
-                    style={{ 
-                      filter: `sepia(0.3) hue-rotate(-10deg) saturate(1.2) brightness(${1 + (skinColor === "#8d5524" ? -0.3 : skinColor === "#f1c27d" ? 0.2 : 0)})`,
-                      transform: `scaleY(${1 + (height - 50) / 200}) scaleX(${bodyType === 'Fat' || bodyType === 'Overweight' ? 1.2 : bodyType === 'Skinny' ? 0.85 : 1})`
-                    }} 
-                  />
-                  
-                  {/* THE FACE MAPPING OVERLAY */}
-                  {faceImage && (
-                    <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-16 h-16 rounded-full overflow-hidden border-2 border-white/50 shadow-md backdrop-blur-sm mix-blend-normal">
-                      <img src={faceImage} className="w-full h-full object-cover" />
-                    </div>
-                  )}
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase text-[var(--text-muted)]">Body Type</label>
+                <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
+                  {["Skinny", "Fit", "Athletic", "Fat", "Overweight"].map(bt => (
+                    <button key={bt} onClick={() => setBodyType(bt)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${bodyType === bt ? 'bg-[var(--text-main)] text-[var(--bg-text-main)] shadow-sm' : 'glass-panel'}`}>{bt}</button>
+                  ))}
                 </div>
+                <p className="text-[10px] text-[var(--text-muted)] mt-1">Note: For true body changes, use the Ready Player Me editor link below.</p>
+              </div>
 
-                {/* CUSTOMIZATION SLIDERS */}
-                <div className="glass-panel p-4 rounded-2xl space-y-4">
-                  <div className="flex items-center gap-2 mb-2 text-[var(--text-main)]">
-                    <SlidersHorizontal size={16} />
-                    <h3 className="font-medium text-sm">Edit Character</h3>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-[var(--text-muted)]">Body Type</label>
-                    <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
-                      {["Skinny", "Fit", "Athletic", "Fat", "Overweight"].map(bt => (
-                        <button key={bt} onClick={() => setBodyType(bt)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${bodyType === bt ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}>{bt}</button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex justify-between"><label className="text-[10px] font-bold uppercase text-[var(--text-muted)]">Height</label><span className="text-[10px] text-[var(--text-muted)]">{height}%</span></div>
-                    <input type="range" min="1" max="100" value={height} onChange={(e) => setHeight(Number(e.target.value))} className="w-full accent-black dark:accent-white" />
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex justify-between"><label className="text-[10px] font-bold uppercase text-[var(--text-muted)]">Weight</label><span className="text-[10px] text-[var(--text-muted)]">{weight}%</span></div>
-                    <input type="range" min="1" max="100" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="w-full accent-black dark:accent-white" />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase text-[var(--text-muted)]">Skin Tone</label>
-                    <div className="flex gap-2">
-                      {["#f1c27d", "#e0ac69", "#c68642", "#8d5524"].map(color => (
-                        <button key={color} onClick={() => setSkinColor(color)} className={`w-8 h-8 rounded-full border-2 transition-all ${skinColor === color ? 'border-[var(--text-main)] scale-110' : 'border-transparent'}`} style={{ backgroundColor: color }} />
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <button onClick={() => setFaceImage(null)} className="w-full mt-2 text-[10px] font-medium text-[#ff2a2a] underline">Remove Face</button>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase text-[var(--text-muted)]">Skin Tone</label>
+                <div className="flex gap-2">
+                  {["#f1c27d", "#e0ac69", "#c68642", "#8d5524"].map(color => (
+                    <button key={color} onClick={() => setSkinColor(color)} className={`w-8 h-8 rounded-full border-2 transition-all ${skinColor === color ? 'border-[var(--text-main)] scale-110' : 'border-transparent'}`} style={{ backgroundColor: color }} />
+                  ))}
                 </div>
               </div>
-            )}
+
+              <div className="pt-2">
+                <a 
+                  href="https://readyplayer.me/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block w-full text-center bg-[var(--text-main)] text-[var(--bg-main)] rounded-lg py-2.5 text-xs font-medium shadow-md"
+                >
+                  Open Ready Player Me Editor
+                </a>
+                <p className="text-[9px] text-[var(--text-muted)] text-center mt-2">
+                  Create your avatar there, copy the .glb URL, and replace the SAMPLE_AVATAR_URL in the code.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -487,6 +441,14 @@ export default function AuraApp() {
               </div>
 
               <div className="space-y-1">
+                <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase">{t.lang}</label>
+                <div className="flex gap-1.5">
+                  <button onClick={() => setLang("en")} className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${lang === 'en' ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}>English</button>
+                  <button onClick={() => setLang("hi")} className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${lang === 'hi' ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}>हिंदी</button>
+                </div>
+              </div>
+
+              <div className="space-y-1">
                 <label className="text-[10px] font-medium text-[var(--text-muted)] uppercase">{t.theme}</label>
                 <div className="flex gap-1.5">
                   <button onClick={() => setIsDark(false)} className={`flex-1 py-2 rounded-lg text-xs font-medium flex justify-center gap-1.5 items-center transition-all ${!isDark ? 'bg-[var(--text-main)] text-[var(--bg-main)] shadow-sm' : 'glass-panel'}`}><Sun size={14} /> Light</button>
@@ -498,23 +460,3 @@ export default function AuraApp() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* FLOATING CAPSULE TABS */}
-      <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm glass-nav rounded-full px-1.5 py-1.5 flex justify-between items-center z-50">
-        {[
-          { id: "studio", icon: Wand2, label: t.studio },
-          { id: "wardrobe", icon: Shirt, label: t.wardrobe },
-          { id: "avatar", icon: User, label: t.avatar },
-          { id: "discover", icon: Compass, label: t.discover }
-        ].map((tab) => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative flex flex-col items-center justify-center gap-0.5 w-full py-2 rounded-full transition-all duration-300 ${activeTab === tab.id ? "text-[var(--text-main)] scale-105" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"}`}>
-            {activeTab === tab.id && <div className="absolute inset-0 bg-white/70 dark:bg-white/15 rounded-full shadow-sm -z-10" />}
-            <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
-            <span className="text-[9px] font-bold tracking-wide">{tab.label}</span>
-          </button>
-        ))}
-      </nav>
-    </div>
-  );
-}
