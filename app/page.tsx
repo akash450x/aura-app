@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Plus, Search, X, Check, Moon, Sun, Camera, Heart } from "lucide-react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
 
 const dict = {
   en: {
@@ -32,18 +30,13 @@ const dict = {
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
-const SAMPLE_AVATAR = "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb";
+const DUMMY_IMAGE = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop";
 
 const DISCOVER_IMAGES = [
   { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal", styleTag: "Minimal" },
   { id: "d2", url: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop", title: "Streetwear", styleTag: "Streetwear" },
   { id: "d3", url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop", title: "Night Out", styleTag: "Party" },
 ];
-
-function AvatarModel({ url }: { url: string }) {
-  const { scene } = useGLTF(url);
-  return <primitive object={scene} scale={1.8} position={[0, -2.5, 0]} />;
-}
 
 export default function AuraApp() {
   const [activeTab, setActiveTab] = useState("studio");
@@ -307,19 +300,12 @@ export default function AuraApp() {
             <h2 className="font-serif text-3xl tracking-tight">Your Character</h2>
             
             <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg flex items-center justify-center">
-              <Canvas camera={{ position: [0, 0, 4.5], fov: 50 }}>
-                <ambientLight intensity={1.5} />
-                <directionalLight position={[10, 10, 5]} intensity={2} />
-                <Suspense fallback={null}>
-                  <AvatarModel url={SAMPLE_AVATAR} />
-                </Suspense>
-                <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 3} maxPolarAngle={Math.PI / 2} />
-              </Canvas>
+              <img src={DUMMY_IMAGE} className="w-full h-full object-cover opacity-90" />
             </div>
 
             <div className="glass-panel p-4 rounded-2xl space-y-4 relative z-20">
               <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed">
-                Drag on the 3D model to rotate. This is a free sample avatar.
+                Your default AURA character. Customize your profile photo in Settings.
               </p>
             </div>
           </div>
