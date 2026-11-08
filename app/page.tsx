@@ -191,24 +191,6 @@ export default function AuraApp() {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      
-      {showAvatarCreator && (
-        <div className="fixed inset-0 z-[200] bg-black flex flex-col">
-          <div className="bg-black p-4 flex justify-between items-center text-white relative z-[210]">
-             <h3 className="font-serif text-lg">Create your 3D Avatar</h3>
-             <button onClick={() => setShowAvatarCreator(false)} className="bg-white/20 p-2 rounded-full text-white"><X size={18} /></button>
-          </div>
-          <div className="flex-1 relative">
-            <AvatarCreator
-              subdomain="demo" 
-              config={{ clearCache: true }}
-              onAvatarExported={(event) => {
-                setShowAvatarCreator(false);
-              }}
-            />
-          </div>
-        </div>
-      )}
 
       <div className="fixed inset-0 -z-10 bg-[var(--bg-main)] transition-colors duration-500">
          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[#e0dcd3] dark:bg-[#1c1c1a] blur-[120px] opacity-70 pointer-events-none" />
