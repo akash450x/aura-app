@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Plus, Search, X, Check, Moon, Sun, Camera, Heart } from "lucide-react";
-import { AvatarCreator } from "@readyplayerme/react-avatar-creator";
 
 const dict = {
   en: {
