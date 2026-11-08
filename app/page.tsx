@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Layers, Plus, Search, X, Check, Moon, Sun, Camera, Heart, SlidersHorizontal } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
+import { AvatarCreator, AvatarCreatorConfig } from "@readyplayerme/react-avatar-creator";
 
 const dict = {
   en: {
@@ -15,7 +16,7 @@ const dict = {
     hybridwardrobe: "Mixed your wardrobe with AI suggestions.",
     profile: "Settings", name: "Your Name", gender: "Gender", lang: "Language", theme: "Appearance",
     save: "Save", search: "Search...",
-    season: "Season", weather: "Weather", upload_face: "Customize 3D Avatar", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
+    season: "Season", weather: "Weather", upload_face: "Customize Avatar", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
   },
   hi: {
     studio: "स्टूडियो", wardrobe: "वार्डरोब", avatar: "अवतार", discover: "खोजें",
@@ -26,13 +27,12 @@ const dict = {
     hybridwardrobe: "आपके कपड़ों और एआई का मिश्रण।",
     profile: "सेटिंग्स", name: "आपका नाम", gender: "लिंग", lang: "भाषा", theme: "थीम",
     save: "सहेजें", search: "खोजें...",
-    season: "मौसम", weather: "वेदर", upload_face: "3डी अवतार बनाएं", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
+    season: "मौसम", weather: "वेदर", upload_face: "अवतार बनाएं", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
   }
 };
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
-// A SAMPLE READY PLAYER ME AVATAR (You can generate your own free URL at readyplayer.me)
 const SAMPLE_AVATAR_URL = "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb";
 
 const DISCOVER_IMAGES = [
@@ -41,7 +41,6 @@ const DISCOVER_IMAGES = [
   { id: "d3", url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop", title: "Night Out", styleTag: "Party" },
 ];
 
-// 3D Avatar Component
 function Avatar3D({ url }: { url: string }) {
   const { scene } = useGLTF(url);
   return <primitive object={scene} scale={1.8} position={[0, -2.5, 0]} />;
@@ -68,10 +67,8 @@ export default function AuraApp() {
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string>("auto");
 
-  // 3D AVATAR STATE
   const [avatarUrl, setAvatarUrl] = useState(SAMPLE_AVATAR_URL);
-  const [bodyType, setBodyType] = useState("Fit");
-  const [skinColor, setSkinColor] = useState("#f1c27d");
+  const [showAvatarCreator, setShowAvatarCreator] = useState(false);
 
   const [likedItems, setLikedItems] = useState<string[]>([]);
   const [dislikedItems, setDislikedItems] = useState<string[]>([]);
@@ -107,6 +104,8 @@ export default function AuraApp() {
       if (savedDark) setIsDark(savedDark === "true");
       const savedAvatar = localStorage.getItem("aura_avatar");
       if (savedAvatar) setAvatar(savedAvatar);
+      const savedAvatarUrl = localStorage.getItem("aura_3d_avatar");
+      if (savedAvatarUrl) setAvatarUrl(savedAvatarUrl);
       const savedLikes = localStorage.getItem("aura_likes");
       if (savedLikes) setLikedItems(JSON.parse(savedLikes));
       const savedDislikes = localStorage.getItem("aura_dislikes");
@@ -123,10 +122,11 @@ export default function AuraApp() {
       localStorage.setItem("aura_likes", JSON.stringify(likedItems));
       localStorage.setItem("aura_dislikes", JSON.stringify(dislikedItems));
       if (avatar) localStorage.setItem("aura_avatar", avatar);
+      if (avatarUrl) localStorage.setItem("aura_3d_avatar", avatarUrl);
       if (isDark) document.documentElement.classList.add("dark-mode");
       else document.documentElement.classList.remove("dark-mode");
     }
-  }, [wardrobe, userName, gender, isDark, avatar, likedItems, dislikedItems]);
+  }, [wardrobe, userName, gender, isDark, avatar, likedItems, dislikedItems, avatarUrl]);
 
   const t = dict[lang];
 
@@ -188,6 +188,22 @@ export default function AuraApp() {
 
   return (
     <div className="min-h-screen relative overflow-hidden pb-24 font-sans" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      
+      {/* READY PLAYER ME CREATOR OVERLAY */}
+      {showAvatarCreator && (
+        <div className="fixed inset-0 z-[200] bg-black">
+          <button onClick={() => setShowAvatarCreator(false)} className="absolute top-4 right-4 z-[210] bg-white text-black p-2 rounded-full font-bold">Close X</button>
+          <AvatarCreator
+            subdomain="demo" 
+            config={{ clearCache: true }}
+            onAvatarExported={(event) => {
+              setAvatarUrl(event.data.url);
+              setShowAvatarCreator(false);
+            }}
+          />
+        </div>
+      )}
+
       <div className="fixed inset-0 -z-10 bg-[var(--bg-main)] transition-colors duration-500">
          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[#e0dcd3] dark:bg-[#1c1c1a] blur-[120px] opacity-70 pointer-events-none" />
       </div>
@@ -300,7 +316,7 @@ export default function AuraApp() {
             <h2 className="font-serif text-3xl tracking-tight">Your 3D Character</h2>
             
             <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg">
-              <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+              <Canvas camera={{ position: [0, 0, 4], fov: 50 }}>
                 <ambientLight intensity={1.5} />
                 <directionalLight position={[10, 10, 5]} intensity={2} />
                 <Avatar3D url={avatarUrl} />
@@ -309,43 +325,15 @@ export default function AuraApp() {
             </div>
 
             <div className="glass-panel p-4 rounded-2xl space-y-4">
-              <div className="flex items-center gap-2 mb-2 text-[var(--text-main)]">
-                <SlidersHorizontal size={16} />
-                <h3 className="font-medium text-sm">Customize 3D Avatar</h3>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-[var(--text-muted)]">Body Type</label>
-                <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
-                  {["Skinny", "Fit", "Athletic", "Fat", "Overweight"].map(bt => (
-                    <button key={bt} onClick={() => setBodyType(bt)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${bodyType === bt ? 'bg-[var(--text-main)] text-[var(--bg-text-main)] shadow-sm' : 'glass-panel'}`}>{bt}</button>
-                  ))}
-                </div>
-                <p className="text-[10px] text-[var(--text-muted)] mt-1">Note: For true body changes, use the Ready Player Me editor link below.</p>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-[var(--text-muted)]">Skin Tone</label>
-                <div className="flex gap-2">
-                  {["#f1c27d", "#e0ac69", "#c68642", "#8d5524"].map(color => (
-                    <button key={color} onClick={() => setSkinColor(color)} className={`w-8 h-8 rounded-full border-2 transition-all ${skinColor === color ? 'border-[var(--text-main)] scale-110' : 'border-transparent'}`} style={{ backgroundColor: color }} />
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <a 
-                  href="https://readyplayer.me/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="block w-full text-center bg-[var(--text-main)] text-[var(--bg-main)] rounded-lg py-2.5 text-xs font-medium shadow-md"
-                >
-                  Open Ready Player Me Editor
-                </a>
-                <p className="text-[9px] text-[var(--text-muted)] text-center mt-2">
-                  Create your avatar there, copy the .glb URL, and replace the SAMPLE_AVATAR_URL in the code.
-                </p>
-              </div>
+              <button 
+                onClick={() => setShowAvatarCreator(true)}
+                className="w-full bg-[var(--text-main)] text-[var(--bg-main)] rounded-lg py-3 text-sm font-medium flex justify-center items-center gap-2 shadow-md hover:opacity-90 active:scale-95 transition-all"
+              >
+                <Sparkles size={16} /> Build Custom 3D Avatar
+              </button>
+              <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed">
+                This opens the free Ready Player Me editor. You can customize your face, body, and clothes. When you save, it will load your personal 3D twin here.
+              </p>
             </div>
           </div>
         )}
