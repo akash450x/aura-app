@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -68,50 +67,32 @@ export default function AuraApp() {
 
   const tabs = ["studio", "wardrobe", "avatar", "discover"];
   
-  // SLIDER NAVIGATION LOGIC
-  const navRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  // SWIPE LOGIC FOR THE WHOLE SCREEN
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
 
-    const handleStart = (e: TouchEvent) => {
-      setIsDragging(true);
-      updateTabFromTouch(e.touches[0].clientX);
-    };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
 
-    const handleMove = (e: TouchEvent) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      updateTabFromTouch(e.touches[0].clientX);
-    };
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
 
-    const handleEnd = () => {
-      setIsDragging(false);
-    };
-
-    nav.addEventListener("touchstart", handleStart);
-    nav.addEventListener("touchmove", handleMove, { passive: false });
-    nav.addEventListener("touchend", handleEnd);
-
-    return () => {
-      nav.removeEventListener("touchstart", handleStart);
-      nav.removeEventListener("touchmove", handleMove);
-      nav.removeEventListener("touchend", handleEnd);
-    };
-  }, [isDragging]);
-
-  const updateTabFromTouch = (clientX: number) => {
-    if (!navRef.current) return;
-    const rect = navRef.current.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const percentage = Math.max(0, Math.min(1, x / rect.width));
-    const tabWidthPercent = 100 / tabs.length;
-    const currentTabIndex = Math.floor(percentage * tabs.length);
+    const currentIndex = tabs.indexOf(activeTab);
     
-    if (currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-      setActiveTab(tabs[currentTabIndex]);
+    if (isLeftSwipe && currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1]);
+    }
+    if (isRightSwipe && currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]);
     }
   };
 
@@ -207,7 +188,12 @@ export default function AuraApp() {
   const occasionTags = ["Casual", "Streetwear", "Formal", "Aesthetic", "Funky", "Date Night"];
 
   return (
-    <div className="min-h-screen relative overflow-hidden pb-24 font-sans">
+    <div 
+      className="min-h-screen relative overflow-hidden pb-24 font-sans"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       
       {showAvatarCreator && (
         <div className="fixed inset-0 z-[200] bg-black flex flex-col">
@@ -462,32 +448,31 @@ export default function AuraApp() {
         </div>
       )}
 
-      <nav 
-        ref={navRef}
-        className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm glass-nav rounded-full p-1.5 flex justify-between items-center z-50 touch-none"
-      >
-        <div 
-          className={`absolute top-1.5 bottom-1.5 bg-white/70 dark:bg-white/15 rounded-full shadow-sm ${isDragging ? '' : 'transition-all duration-300 ease-out'}`}
-          style={{ 
-            width: `calc(100% / 4 - 3px)`, 
-            left: `calc(${tabs.indexOf(activeTab)} * 100% / 4 + 1.5px)` 
-          }} 
-        />
-        
-        {[
-          { id: "studio", icon: Wand2, label: t.studio },
-          { id: "wardrobe", icon: Shirt, label: t.wardrobe },
-          { id: "avatar", icon: User, label: t.avatar },
-          { id: "discover", icon: Compass, label: t.discover }
-        ].map((tab) => (
-          <button 
-            key={tab.id} 
-            className={`relative z-10 flex flex-col items-center justify-center gap-0.5 w-full py-2 rounded-full transition-colors duration-300 ${activeTab === tab.id ? "text-[var(--text-main)]" : "text-[var(--text-muted)]"}`}
-          >
-            <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
-            <span className="text-[9px] font-bold tracking-wide">{tab.label}</span>
-          </button>
-        ))}
+      <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-sm z-50">
+        <div className="glass-nav rounded-full p-1.5 relative flex items-center">
+          <div 
+            className="absolute top-1.5 bottom-1.5 bg-white/70 dark:bg-white/15 rounded-full shadow-sm transition-all duration-300 ease-out"
+            style={{ 
+              width: `calc(100% / 4 - 3px)`, 
+              left: `calc(${tabs.indexOf(activeTab)} * 100% / 4 + 1.5px)` 
+            }} 
+          />
+          {[
+            { id: "studio", icon: Wand2, label: t.studio },
+            { id: "wardrobe", icon: Shirt, label: t.wardrobe },
+            { id: "avatar", icon: User, label: t.avatar },
+            { id: "discover", icon: Compass, label: t.discover }
+          ].map((tab) => (
+            <button 
+              key={tab.id} 
+              onClick={() => setActiveTab(tab.id)} 
+              className={`relative z-10 flex flex-col items-center justify-center gap-0.5 w-full py-2 rounded-full transition-all duration-300 ${activeTab === tab.id ? "text-[var(--text-main)]" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"}`}
+            >
+              <tab.icon size={18} strokeWidth={activeTab === tab.id ? 2.5 : 1.5} />
+              <span className="text-[9px] font-bold tracking-wide">{tab.label}</span>
+            </button>
+          ))}
+        </div>
       </nav>
     </div>
   );
