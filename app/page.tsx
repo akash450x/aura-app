@@ -30,7 +30,8 @@ const dict = {
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
-const DUMMY_IMAGE = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop";
+// THIS IS THE REAL 3D MODEL LINK
+const GLB_MODEL_URL = "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb";
 
 const DISCOVER_IMAGES = [
   { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal", styleTag: "Minimal" },
@@ -64,6 +65,7 @@ export default function AuraApp() {
 
   const tabs = ["studio", "wardrobe", "avatar", "discover"];
   
+  // SWIPE LOGIC
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
@@ -299,13 +301,18 @@ export default function AuraApp() {
           <div className="flex flex-col gap-5 min-h-[50vh] animate-in fade-in zoom-in-95 duration-200">
             <h2 className="font-serif text-3xl tracking-tight">Your Character</h2>
             
-            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg flex items-center justify-center">
-              <img src={DUMMY_IMAGE} className="w-full h-full object-cover opacity-90" />
+            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg">
+              <iframe 
+                src={`https://readyplayer.me/avatar?frameApi&model=${GLB_MODEL_URL}`}
+                className="w-full h-full border-none"
+                title="3D Avatar"
+                allow="camera *; microphone *; clipboard-write"
+              />
             </div>
 
             <div className="glass-panel p-4 rounded-2xl space-y-4 relative z-20">
               <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed">
-                Your default AURA character. Customize your profile photo in Settings.
+                Drag on the 3D model to rotate. This is your real 3D character.
               </p>
             </div>
           </div>
