@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Plus, Search, X, Check, Moon, Sun, Camera, Heart } from "lucide-react";
+import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Plus, Search, X, Check, Moon, Sun, Camera, Heart, ExternalLink } from "lucide-react";
 
 const dict = {
   en: {
@@ -13,7 +13,7 @@ const dict = {
     hybridwardrobe: "Mixed your wardrobe with AI suggestions.",
     profile: "Settings", name: "Your Name", gender: "Gender", lang: "Language", theme: "Appearance",
     save: "Save", search: "Search...",
-    season: "Season", weather: "Weather", upload_face: "Upload Face Photo", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
+    season: "Season", weather: "Weather", upload_face: "Upload Face Photo", manual_select: "Select Item Type", auto_detect: "Auto-Detect", view_3d: "View 3D Avatar"
   },
   hi: {
     studio: "स्टूडियो", wardrobe: "वार्डरोब", avatar: "अवतार", discover: "खोजें",
@@ -24,13 +24,14 @@ const dict = {
     hybridwardrobe: "आपके कपड़ों और एआई का मिश्रण।",
     profile: "सेटिंग्स", name: "आपका नाम", gender: "लिंग", lang: "भाषा", theme: "थीम",
     save: "सहेजें", search: "खोजें...",
-    season: "मौसम", weather: "वेदर", upload_face: "चेहरा अपलोड करें", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
+    season: "मौसम", weather: "वेदर", upload_face: "चेहरा अपलोड करें", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट", view_3d: "3डी अवतार देखें"
   }
 };
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
-const DUMMY_IMAGE = "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop";
+// THE 3D MODEL LINK
+const GLB_MODEL_URL = "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb";
 
 const DISCOVER_IMAGES = [
   { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal", styleTag: "Minimal" },
@@ -309,8 +310,25 @@ export default function AuraApp() {
           <div className="flex flex-col gap-5 min-h-[50vh] animate-in fade-in zoom-in-95 duration-200">
             <h2 className="font-serif text-3xl tracking-tight">Your Character</h2>
             
-            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg flex items-center justify-center">
-              <img src={DUMMY_IMAGE} className="w-full h-full object-cover opacity-90" />
+            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg flex flex-col items-center justify-center p-6">
+              <img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 border border-white/30">
+                  <User size={40} className="text-[var(--text-main)]" />
+                </div>
+                <h3 className="font-serif text-xl mb-2">3D Avatar Ready</h3>
+                <p className="text-xs text-[var(--text-muted)] mb-6 max-w-[200px]">
+                  Click below to open the 3D viewer and rotate your character.
+                </p>
+                <a 
+                  href={`https://readyplayer.me/avatar?frameApi`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-[var(--text-main)] text-[var(--bg-main)] rounded-full px-6 py-3 text-sm font-medium flex items-center gap-2 shadow-lg hover:opacity-90 active:scale-95 transition-all"
+                >
+                  <ExternalLink size={16} /> View 3D Avatar
+                </a>
+              </div>
             </div>
 
             <div className="glass-panel p-4 rounded-2xl space-y-4 relative z-20">
