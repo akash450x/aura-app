@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Plus, Search, X, Check, Moon, Sun, Camera, Heart, ExternalLink } from "lucide-react";
+import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Plus, Search, X, Check, Moon, Sun, Camera, Heart } from "lucide-react";
 
 const dict = {
   en: {
-    studio: "Studio", wardrobe: "Wardrobe", avatar: "Avatar", discover: "Discover",
+    studio: "Studio", wardrobe: "Wardrobe", discover: "Discover",
     welcome: "Welcome", letstyle: "Let's style.", desc: "Discover your personal style with intelligent outfit recommendations.",
     placeholder: "What are we dressing for?", create: "Create", ai: "AI Stylist",
     emptywardrobe: "Wardrobe empty. AI generated this look.",
@@ -13,10 +13,10 @@ const dict = {
     hybridwardrobe: "Mixed your wardrobe with AI suggestions.",
     profile: "Settings", name: "Your Name", gender: "Gender", lang: "Language", theme: "Appearance",
     save: "Save", search: "Search...",
-    season: "Season", weather: "Weather", upload_face: "Upload Face Photo", manual_select: "Select Item Type", auto_detect: "Auto-Detect", view_3d: "View 3D Avatar"
+    season: "Season", weather: "Weather", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
   },
   hi: {
-    studio: "स्टूडियो", wardrobe: "वार्डरोब", avatar: "अवतार", discover: "खोजें",
+    studio: "स्टूडियो", wardrobe: "वार्डरोब", discover: "खोजें",
     welcome: "स्वागत है", letstyle: "चलिए स्टाइल करें।", desc: "इंटेलिजेंट आउटफिट सुझावों के साथ अपनी शैली खोजें।",
     placeholder: "आज क्या पहनें?", create: "बनाएं", ai: "एआई स्टाइलिस्ट",
     emptywardrobe: "वार्डरोब खाली है। एआई ने यह बनाया है।",
@@ -24,14 +24,11 @@ const dict = {
     hybridwardrobe: "आपके कपड़ों और एआई का मिश्रण।",
     profile: "सेटिंग्स", name: "आपका नाम", gender: "लिंग", lang: "भाषा", theme: "थीम",
     save: "सहेजें", search: "खोजें...",
-    season: "मौसम", weather: "वेदर", upload_face: "चेहरा अपलोड करें", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट", view_3d: "3डी अवतार देखें"
+    season: "मौसम", weather: "वेदर", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
   }
 };
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
-
-// THE 3D MODEL LINK
-const GLB_MODEL_URL = "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb";
 
 const DISCOVER_IMAGES = [
   { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal", styleTag: "Minimal" },
@@ -65,7 +62,7 @@ export default function AuraApp() {
   const [likedItems, setLikedItems] = useState<string[]>([]);
   const [dislikedItems, setDislikedItems] = useState<string[]>([]);
 
-  const tabs = ["studio", "wardrobe", "avatar", "discover"];
+  const tabs = ["studio", "wardrobe", "discover"];
   
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -306,47 +303,6 @@ export default function AuraApp() {
           </div>
         )}
 
-        {activeTab === "avatar" && (
-          <div className="flex flex-col gap-5 min-h-[50vh] animate-in fade-in zoom-in-95 duration-200">
-            <h2 className="font-serif text-3xl tracking-tight">Your Character</h2>
-            
-            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg flex flex-col items-center justify-center p-6">
-              <img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm" />
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 border border-white/30">
-                  <User size={40} className="text-[var(--text-main)]" />
-                </div>
-                <h3 className="font-serif text-xl mb-2">3D Avatar Ready</h3>
-                <p className="text-xs text-[var(--text-muted)] mb-6 max-w-[200px]">
-                  Click below to open the 3D viewer and rotate your character.
-                </p>
-                <a 
-                  href={`https://readyplayer.me/avatar?frameApi`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="bg-[var(--text-main)] text-[var(--bg-main)] rounded-full px-6 py-3 text-sm font-medium flex items-center gap-2 shadow-lg hover:opacity-90 active:scale-95 transition-all"
-                >
-                  <ExternalLink size={16} /> View 3D Avatar
-                </a>
-              </div>
-            </div>
-
-            <div className="glass-panel p-4 rounded-2xl space-y-4 relative z-20">
-              <button 
-                onClick={() => faceInputRef.current?.click()}
-                className="w-full bg-[var(--text-main)] text-[var(--bg-main)] rounded-lg py-3 text-sm font-medium flex justify-center items-center gap-2 shadow-md hover:opacity-90 active:scale-95 transition-all"
-              >
-                <Camera size={16} /> {t.upload_face}
-              </button>
-              <input type="file" accept="image/*" ref={faceInputRef} onChange={handleFaceUpload} className="hidden" />
-              
-              <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed">
-                Upload a face photo to set your profile avatar.
-              </p>
-            </div>
-          </div>
-        )}
-
         {activeTab === "discover" && (
           <div className="flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-200">
             <h2 className="font-serif text-3xl tracking-tight mb-1">{t.discover}</h2>
@@ -454,14 +410,13 @@ export default function AuraApp() {
           <div 
             className="absolute top-1.5 bottom-1.5 bg-white/70 dark:bg-white/15 rounded-full shadow-sm transition-all duration-300 ease-out"
             style={{ 
-              width: `calc(100% / 4 - 3px)`, 
-              left: `calc(${tabs.indexOf(activeTab)} * 100% / 4 + 1.5px)` 
+              width: `calc(100% / 3 - 3px)`, 
+              left: `calc(${tabs.indexOf(activeTab)} * 100% / 3 + 1.5px)` 
             }} 
           />
           {[
             { id: "studio", icon: Wand2, label: t.studio },
             { id: "wardrobe", icon: Shirt, label: t.wardrobe },
-            { id: "avatar", icon: User, label: t.avatar },
             { id: "discover", icon: Compass, label: t.discover }
           ].map((tab) => (
             <button 
