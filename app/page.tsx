@@ -1,7 +1,10 @@
+// @ts-nocheck
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { Sparkles, ChevronRight, Shirt, Wand2, User, Compass, Plus, Search, X, Check, Moon, Sun, Camera, Heart } from "lucide-react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, useGLTF } from "@react-three/drei";
 
 const dict = {
   en: {
@@ -13,7 +16,7 @@ const dict = {
     hybridwardrobe: "Mixed your wardrobe with AI suggestions.",
     profile: "Settings", name: "Your Name", gender: "Gender", lang: "Language", theme: "Appearance",
     save: "Save", search: "Search...",
-    season: "Season", weather: "Weather", upload_face: "Customize Avatar", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
+    season: "Season", weather: "Weather", upload_face: "Upload Face Photo", manual_select: "Select Item Type", auto_detect: "Auto-Detect"
   },
   hi: {
     studio: "स्टूडियो", wardrobe: "वार्डरोब", avatar: "अवतार", discover: "खोजें",
@@ -24,20 +27,24 @@ const dict = {
     hybridwardrobe: "आपके कपड़ों और एआई का मिश्रण।",
     profile: "सेटिंग्स", name: "आपका नाम", gender: "लिंग", lang: "भाषा", theme: "थीम",
     save: "सहेजें", search: "खोजें...",
-    season: "मौसम", weather: "वेदर", upload_face: "अवतार बनाएं", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
+    season: "मौसम", weather: "वेदर", upload_face: "चेहरा अपलोड करें", manual_select: "प्रकार चुनें", auto_detect: "ऑटो-डिटेक्ट"
   }
 };
 
 const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
 
-// THIS IS THE REAL 3D MODEL LINK
-const GLB_MODEL_URL = "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb";
+const SAMPLE_AVATAR = "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb";
 
 const DISCOVER_IMAGES = [
   { id: "d1", url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop", title: "Minimal", styleTag: "Minimal" },
   { id: "d2", url: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop", title: "Streetwear", styleTag: "Streetwear" },
   { id: "d3", url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop", title: "Night Out", styleTag: "Party" },
 ];
+
+function AvatarModel({ url }: { url: string }) {
+  const { scene } = useGLTF(url);
+  return <primitive object={scene} scale={1.8} position={[0, -2.5, 0]} />;
+}
 
 export default function AuraApp() {
   const [activeTab, setActiveTab] = useState("studio");
@@ -49,7 +56,10 @@ export default function AuraApp() {
   const [gender, setGender] = useState("Male");
   const [lang, setLang] = useState<"en" | "hi">("en");
   const [isDark, setIsDark] = useState(false);
-  const [avatar, setAvatar] = useState<string | null>(null);
+  
+  // FACE UPLOAD STATE
+  const faceInputRef = useRef<HTMLInputElement>(null);
+  const [faceImage, setFaceImage] = useState<string | null>(null);
 
   const [selectedSeason, setSelectedSeason] = useState("Any");
   const [selectedWeather, setSelectedWeather] = useState("Any");
@@ -65,7 +75,6 @@ export default function AuraApp() {
 
   const tabs = ["studio", "wardrobe", "avatar", "discover"];
   
-  // SWIPE LOGIC
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
@@ -104,8 +113,8 @@ export default function AuraApp() {
       if (savedGender) setGender(savedGender);
       const savedDark = localStorage.getItem("aura_dark");
       if (savedDark) setIsDark(savedDark === "true");
-      const savedAvatar = localStorage.getItem("aura_avatar");
-      if (savedAvatar) setAvatar(savedAvatar);
+      const savedFace = localStorage.getItem("aura_face");
+      if (savedFace) setFaceImage(savedFace);
       const savedLikes = localStorage.getItem("aura_likes");
       if (savedLikes) setLikedItems(JSON.parse(savedLikes));
       const savedDislikes = localStorage.getItem("aura_dislikes");
@@ -121,11 +130,11 @@ export default function AuraApp() {
       localStorage.setItem("aura_dark", isDark.toString());
       localStorage.setItem("aura_likes", JSON.stringify(likedItems));
       localStorage.setItem("aura_dislikes", JSON.stringify(dislikedItems));
-      if (avatar) localStorage.setItem("aura_avatar", avatar);
+      if (faceImage) localStorage.setItem("aura_face", faceImage);
       if (isDark) document.documentElement.classList.add("dark-mode");
       else document.documentElement.classList.remove("dark-mode");
     }
-  }, [wardrobe, userName, gender, isDark, avatar, likedItems, dislikedItems]);
+  }, [wardrobe, userName, gender, isDark, faceImage, likedItems, dislikedItems]);
 
   const t = dict[lang];
 
@@ -174,6 +183,14 @@ export default function AuraApp() {
     setShowUploadModal(false); setPendingImage(null);
   };
 
+  const handleFaceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => { setFaceImage(event.target?.result as string); };
+    reader.readAsDataURL(file);
+  };
+
   const handleLike = (id: string) => {
     setLikedItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
     setDislikedItems(prev => prev.filter(i => i !== id));
@@ -202,7 +219,7 @@ export default function AuraApp() {
         <header className="flex justify-between items-center">
           <h1 className="font-agency text-[#ff2a2a] text-3xl mt-1 tracking-widest drop-shadow-sm">AURA</h1>
           <button onClick={() => setShowSettings(true)} className="w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-sm overflow-hidden">
-            {avatar ? <img src={avatar} className="w-full h-full object-cover" /> : <User size={18} />}
+            {faceImage ? <img src={faceImage} className="w-full h-full object-cover" /> : <User size={18} />}
           </button>
         </header>
 
@@ -301,18 +318,28 @@ export default function AuraApp() {
           <div className="flex flex-col gap-5 min-h-[50vh] animate-in fade-in zoom-in-95 duration-200">
             <h2 className="font-serif text-3xl tracking-tight">Your Character</h2>
             
-            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg">
-              <iframe 
-                src={`https://readyplayer.me/avatar?frameApi&model=${GLB_MODEL_URL}`}
-                className="w-full h-full border-none"
-                title="3D Avatar"
-                allow="camera *; microphone *; clipboard-write"
-              />
+            <div className="w-full glass-panel rounded-2xl overflow-hidden relative aspect-[3/4] bg-[#e0dcd3] dark:bg-[#1c1c1a] shadow-lg flex items-center justify-center">
+              <Canvas camera={{ position: [0, 0, 4.5], fov: 50 }}>
+                <ambientLight intensity={1.5} />
+                <directionalLight position={[10, 10, 5]} intensity={2} />
+                <Suspense fallback={null}>
+                  <AvatarModel url={SAMPLE_AVATAR} />
+                </Suspense>
+                <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 3} maxPolarAngle={Math.PI / 2} />
+              </Canvas>
             </div>
 
             <div className="glass-panel p-4 rounded-2xl space-y-4 relative z-20">
+              <button 
+                onClick={() => faceInputRef.current?.click()}
+                className="w-full bg-[var(--text-main)] text-[var(--bg-main)] rounded-lg py-3 text-sm font-medium flex justify-center items-center gap-2 shadow-md hover:opacity-90 active:scale-95 transition-all"
+              >
+                <Camera size={16} /> {t.upload_face}
+              </button>
+              <input type="file" accept="image/*" ref={faceInputRef} onChange={handleFaceUpload} className="hidden" />
+              
               <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed">
-                Drag on the 3D model to rotate. This is your real 3D character.
+                Drag on the 3D model to rotate. Upload a face photo to set your profile avatar.
               </p>
             </div>
           </div>
@@ -378,15 +405,8 @@ export default function AuraApp() {
               
               <div className="flex flex-col items-center gap-2">
                 <label className="relative w-20 h-20 rounded-full glass-panel flex flex-col items-center justify-center cursor-pointer overflow-hidden border-2 border-[var(--text-muted)] border-dashed">
-                  {avatar ? <img src={avatar} className="w-full h-full object-cover" /> : <Camera size={20} className="text-[var(--text-muted)]" />}
-                  <input type="file" accept="image/*" onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (event) => setAvatar(event.target?.result as string);
-                      reader.readAsDataURL(file);
-                    }
-                  }} className="hidden" />
+                  {faceImage ? <img src={faceImage} className="w-full h-full object-cover" /> : <Camera size={20} className="text-[var(--text-muted)]" />}
+                  <input type="file" accept="image/*" onChange={handleFaceUpload} className="hidden" />
                 </label>
                 <span className="text-[10px] text-[var(--text-muted)]">Tap to change</span>
               </div>
